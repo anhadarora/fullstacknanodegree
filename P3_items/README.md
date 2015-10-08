@@ -33,3 +33,5 @@ Leafer's Health Items {insert function} Created by [Marie Leaf](https://twitter.
 * url_for
 * Forms
 * Message Flashing
+* JSON Messages
+* Styling with CSS
