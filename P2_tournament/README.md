@@ -14,8 +14,8 @@ Leafer's Tournament {insert function} Created by [Marie Leaf](https://twitter.co
 * Vagrant
 * Virtual Box
 * You need [Python 2.7.9](https://www.python.org/downloads/) installed on your computer.
-* Open and run entertainment_center.py in your Python IDE (IDLE was used in creation).
-* An html file will be generated within the folder as a webpage that list's Leaf's favorite movies!
+* Open and run {insert file to run} in your Python IDE (IDLE was used in creation).
+* {insert expected outcome}
 * Linux, Mac OS X
 
 ### Creator
