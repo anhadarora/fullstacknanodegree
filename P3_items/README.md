@@ -27,11 +27,11 @@ Leafer's Health Items {insert function} Created by [Marie Leaf](https://twitter.
 * <https://github.com/mleafer>
 
 ### Concepts 
-* Frameworks
-* Databases
-* Templates
-* url_for
-* Forms
-* Message Flashing
-* JSON Messages
-* Styling with CSS
+* Iterative Development
+* Mock-ups
+* Frameworks + Databases
+* Routing + url_for
+* Templates + Forms
+* CRUD Functionality
+* API Endpoints + JSON Messages
+* Styling with CSS + * Message Flashing
