@@ -35,3 +35,4 @@ Leafer's Health Items {insert function} Created by [Marie Leaf](https://twitter.
 * CRUD Functionality
 * API Endpoints + JSON Messages
 * Styling with CSS + * Message Flashing
+* Local Permission Systems
