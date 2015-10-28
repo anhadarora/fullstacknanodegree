@@ -19,7 +19,7 @@ def deletePlayers():
     """Removes all the player records from the database."""
     db = connect(dbname)
     c = db.cursor()
-    c.execute("DELETE FROM Players;")
+    c.execute("DELETE FROM players;")
     db.commit()
     db.close()
     return db
@@ -54,7 +54,7 @@ def countPlayers():
     """Returns the number of players currently registered."""
     db = connect(dbname)
     c = db.cursor()
-    c.execute("SELECT COUNT(id) from players;")
+    c.execute("SELECT COUNT(p_id) from players;")
     result = c.fetchone()[0]
     db.close()
     return result
@@ -97,6 +97,22 @@ def registerPlayer(name=''):
     db.commit()
     db.close()
 
+# def registerPlayerTournament(name='', t_id=''):
+#     """Adds a player to the current tournament database.
+  
+#     The database assigns a unique serial id number for the player.  (This
+#     should be handled by your SQL database schema, not in your Python code.)
+  
+#     Args:
+#       p_id: the player's member id.
+#     """
+#     db = connect(dbname)
+#     c = db.cursor()
+#     c.execute("INSERT INTO players(name, t_id)"
+#               "VALUES (%s, %s)", (name, t_id))
+#     db.commit()
+#     db.close()
+
 # def registerPlayer(p_id):
 #     """Adds a player, or list of players, to the current tournament database.
 #     Args:
@@ -131,11 +147,22 @@ def playerStandings(t_id=''):
     """
     db = connect(dbname)
     c = db.cursor()
-    c.execute("SELECT p_id, name, wins, matches"
-              "FROM players "
-              "GROUP BY p_id "
-              "ORDER BY wins DESC;", (t_id,))
-    result = c.fetchall()
+    c.execute("SELECT p.p_id, p.name, COUNT(m.winner_id) as winCount,"
+              "SUM(COUNT(m.winner_id) + COUNT(m.loser_id)) as matchCount"
+              "FROM matches m LEFT JOIN players p"
+              "WHERE winner_id = p_id "
+--            "GROUP BY p_id"
+--            "ORDER BY winCount DESC ;")
+    # c.execute("SELECT * FROM standings;") initiate this once i've created this query as a view
+    q_result = c.fetchall()
+    result = []
+    for row in q_results:
+        if row[3] == None:
+            wins = 0
+        else:
+            wins = row[3]
+        tup = (row[0], row[1], wins, row[2])
+        result.append(tup)
     db.close()
     return result
 
@@ -155,23 +182,12 @@ def reportMatch(win_id='', lose_id=''):
     # set records of match both in match table and player table
     db = connect(dbname)
     c = db.cursor() 
-    # update lose_id record
-    c.execute("UPDATE players "
-              "SET matches = (matches + 1) "
-              "WHERE id = %s;", (lose_id,))
     c.execute("INSERT INTO matches (t_id, m_id, winner_id, "
-              "loser_id, outcome) "
-              "VALUES (%s, %s, %s, %s, %s)",
-              (t_id, m_id, lose_id, win_id, 0))
-    
-    # update win_id record
-    c.execute("UPDATE players "
-              "SET wins = (wins + 1), matches = (matches + 1) "
-              "WHERE id = %s;", (win_id,))
-    c.execute("INSERT INTO matches (t_id, m_id, winner_id, "
-              "loser_id, outcome) "
-              "VALUES (%s, %s, %s, %s, %s)",
-              (t_id, m_id, win_id, lose_id, 1))
+              "loser_id) "
+              "VALUES (%s, %s, %s, %s)",
+              (t_id, m_id, lose_id, win_id))
+    db.commit()
+    db.close()
 
 
 def swissPairings(t_id):
