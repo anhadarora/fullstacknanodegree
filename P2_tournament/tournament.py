@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-
 # tournament.py -- implementation of a Swiss-system tournament
-#easy:https://github.com/allanbreyes/udacity-full-stack/blob/master/p2/vagrant/tournament/tournament.py
-#medium: https://github.com/shteeven/fullstack/blob/master/vagrant/tournament/tournament.py
-#hard: https://github.com/rajputss/FSND_Project2_RelationalDatabase_Tournament
 
 import psycopg2
 
@@ -128,7 +124,7 @@ def registerPlayer(name=''):
 #     db.close()
 
 
-def playerStandings(t_id=''):
+def playerStandings():
     """Returns a list of the players and their win records, sorted by wins, for a 
     single tournament.
 
@@ -136,7 +132,7 @@ def playerStandings(t_id=''):
     tied for first place if there is currently a tie.
 
     Arg:
-        t_id: tournament id
+        t_id: tournament id **need to reinsert this t_id='' in the function, and reinsert this in the body of function WHERE tournament_id = %i......(t_id,)
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -147,34 +143,32 @@ def playerStandings(t_id=''):
     """
     db = connect(dbname)
     c = db.cursor()
-    c.execute("SELECT p.p_id, p.name, COUNT(m.winner_id) as winCount,"
-              "SUM(COUNT(m.winner_id) + COUNT(m.loser_id)) as matchCount"
-              "FROM matches m LEFT JOIN players p"
-              "WHERE winner_id = p_id "
---            "GROUP BY p_id"
---            "ORDER BY winCount DESC ;")
-    # c.execute("SELECT * FROM standings;") initiate this once i've created this query as a view
-    q_result = c.fetchall()
-    result = []
-    for row in q_results:
-        if row[3] == None:
+    c.execute("SELECT players.p_id, players.name, COUNT(matches.winner_id) as winCount, COUNT(matches.m_id) as matchCount "
+              "FROM players LEFT JOIN matches ON players.p_id = matches.winner_id OR players.p_id = matches.loser_id "
+              "GROUP BY players.p_id "                     
+              "ORDER BY winCount DESC, matchCount DESC;")
+    # c.execute("SELECT id, name, winCount, matchCount FROM standings WHERE t_id = %s;" (t_id,))
+    # q_result = c.fetchall()
+    # return results
+    #  c.execute("SELECT * FROM standings;") initiate this once i've created this query as a view
+    results = []
+    for row in c.fetchall():
+        if row[2] == None:
             wins = 0
         else:
-            wins = row[3]
-        tup = (row[0], row[1], wins, row[2])
-        result.append(tup)
+            wins = row[2]
+        results.append((row[0], str(row[1]), wins, row[3])) #why?!?!
+        # result.append(row[0], row[1], wins, row[2])
     db.close()
-    return result
-
-
+    return results
+    
+    db.commit()
+    db.close()
 
 def reportMatch(win_id='', lose_id=''):
-    """Records the outcome of a single match between two players to the matches and 
-    players' tables.
+    """Records the outcome of a single match between two players to the matches table.
 
     Args:
-      t_id: tournament id **** insert back into arguments
-      m_id: match(round) id
       win_id: the id number of the player who won
       lose_id: the id number of the player who lost
 
@@ -182,17 +176,35 @@ def reportMatch(win_id='', lose_id=''):
     # set records of match both in match table and player table
     db = connect(dbname)
     c = db.cursor() 
-    c.execute("INSERT INTO matches (t_id, m_id, winner_id, "
+    c.execute("INSERT INTO matches (winner_id, "
               "loser_id) "
-              "VALUES (%s, %s, %s, %s)",
-              (t_id, m_id, lose_id, win_id))
+              "VALUES (%s, %s)", (win_id, lose_id))
     db.commit()
     db.close()
 
+# def reportMatchToTournament(win_id='', lose_id='', t_id=''):
+#     """Records the outcome of a single match between two players to the matches table.
 
-def swissPairings(t_id):
+#     Args:
+#       t_id: tournament id **** insert back into arguments
+#       m_id: match(round) id
+#       win_id: the id number of the player who won
+#       lose_id: the id number of the player who lost
+
+#     """
+#     # set records of match both in match table and player table
+#     db = connect(dbname)
+#     c = db.cursor() 
+#     c.execute("INSERT INTO matches (winner_id, "
+#               "loser_id, t_id) "
+#               "VALUES (%s, %s, %s)", (win_id, lose_id, t_id,))
+#     db.commit()
+#     db.close()
+
+
+def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
-  
+
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player
@@ -231,18 +243,12 @@ def swissPairings(t_id):
     db.commit()
     db.close()
 
-    # flatten the pairings and convert back to a tuple
-    results = [tuple(list(sum(pairing, ()))) for pairing in pairings]
-
-    return results
+# flatten the pairings and convert back to a tuple
+# results = [tuple(list(sum(pairing, ()))) for pairing in pairings]
 
 #     return pairings
 #     c.execute("SELECT * FROM matches where tourney_id = {t_id} ; ").format(t_id=t_id) )
 #     matchesPlayed = fetchall()
-    
-#     c.execute("SELECT id,name,wins FROM Players ORDER BY wins DESC;")
-#     standings = c.fetchall()
-
 #     c.execute("SELECT p.id, p.name, o.id, o.name FROM playerStandings AS p,"
 #               "playerStandings AS o WHERE p.wins = o.wins AND p.id > o.id")
 #     result = c.fetchall()
@@ -257,8 +263,5 @@ def swissPairings(t_id):
 #         pairings = []
 #         if zip(players[p_id], opponents[id]) in pairings
 #             zip(players[p_id], opponents[opp_id])
- 
-
 #     map(zip(players, opponents))
-
 #     in_progress = c.fetchone()
