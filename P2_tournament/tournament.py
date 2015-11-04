@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# tournament.py -- implementation of a Swiss-system tournament
 
 import psycopg2
 
@@ -242,7 +240,7 @@ def swissPairings():
 
     db.commit()
     db.close()
-
+    return pairings
 # flatten the pairings and convert back to a tuple
 # results = [tuple(list(sum(pairing, ()))) for pairing in pairings]
 
