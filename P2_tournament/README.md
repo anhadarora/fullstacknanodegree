@@ -10,7 +10,7 @@ Leafer's Tournament {insert function} Created by [Marie Leaf](https://twitter.co
 
 ### Quick start
 
-* [Download the latest release]{insert git zip download}.
+* [Download the latest release](https://github.com/mleafer/fullstacknanodegree.git).
 * Vagrant
 * Virtual Box
 * You need [Python 2.7.9](https://www.python.org/downloads/) installed on your computer.
