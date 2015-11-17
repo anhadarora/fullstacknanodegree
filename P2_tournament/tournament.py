@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 
 # tournament.py -- implementation of a Swiss-system tournament
-#easy:https://github.com/allanbreyes/udacity-full-stack/blob/master/p2/vagrant/tournament/tournament.py
-#medium: https://github.com/shteeven/fullstack/blob/master/vagrant/tournament/tournament.py
-#hard: https://github.com/rajputss/FSND_Project2_RelationalDatabase_Tournament
-#better:
-#https://github.com/DavyK/udacityFSWD_p2/blob/master/tournament.sql
-#https://github.com/ghunt03/P2---Swiss-Tournament/blob/master/tournament.py
-
 import psycopg2
 
 dbname = 'tournament'
@@ -150,26 +143,8 @@ def playerStandings():
     """
     db = connect(dbname)
     c = db.cursor()
-
-    # c.execute("SELECT winner_id, count(*) as wins "
-    #           "FROM matches "
-    #           "GROUP BY winner_id; ")
-    # for row in c.fetchall():
-    #     print row
-    # c.execute("SELECT p_id, name, count(p_id=winner_id) as matches "
-    #           "FROM players left join matches on winner_id = p_id or loser_id = p_id "
-    #           "group by p_id; ")
-    # for row in c.fetchall():
-    #     print row
-
-    c.execute("SELECT players.p_id, players.name, COUNT(matches.winner_id) as winCount, COUNT(matches.m_id) as matchCount "
-          "FROM players LEFT JOIN matches ON players.p_id = matches.winner_id OR players.p_id = matches.loser_id "
-          "GROUP BY players.p_id "                     
-          "ORDER BY winCount DESC, matchCount DESC;")
+    c.execute("SELECT * FROM v_standings;")
     # c.execute("SELECT id, name, winCount, matchCount FROM standings WHERE t_id = %s;" (t_id,))
-    # q_result = c.fetchall()
-    # return results
-     # c.execute("SELECT * FROM standings;") initiate this once i've created this query as a view
     results = []
     for row in c.fetchall():
         if row[2] == None:
@@ -178,8 +153,6 @@ def playerStandings():
             wins = row[2]
         results.append((row[0], str(row[1]), wins, row[3])) #why?!?!
         # result.append(row[0], row[1], wins, row[2])
-
-    print "LOOK HERE"
     db.close()
     return results
 
@@ -261,25 +234,3 @@ def swissPairings():
     db.commit()
     db.close()
     return pairings
-# flatten the pairings and convert back to a tuple
-# results = [tuple(list(sum(pairing, ()))) for pairing in pairings]
-
-#     return pairings
-#     c.execute("SELECT * FROM matches where tourney_id = {t_id} ; ").format(t_id=t_id) )
-#     matchesPlayed = fetchall()
-#     c.execute("SELECT p.id, p.name, o.id, o.name FROM playerStandings AS p,"
-#               "playerStandings AS o WHERE p.wins = o.wins AND p.id > o.id")
-#     result = c.fetchall()
-#     return [ row for row in result]
-# """
-    
-#     players, opponents = [], []
-#     players = standings[0::2]
-#     opponents = standings[1::2]
-
-#     for p_id, opp_id in players, opponents :
-#         pairings = []
-#         if zip(players[p_id], opponents[id]) in pairings
-#             zip(players[p_id], opponents[opp_id])
-#     map(zip(players, opponents))
-#     in_progress = c.fetchone()
