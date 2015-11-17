@@ -30,6 +30,38 @@ CREATE TABLE matches  ( m_id serial primary key NOT null,
                         foreign key (winner_id) references players(p_id),
                         foreign key (loser_id) references players(p_id));
 
+
+CREATE VIEW v_wincounts AS (
+    SELECT winner_id, count(*) as wins
+    FROM matches
+    GROUP BY winner_id );
+
+CREATE VIEW v_matchcount AS (
+    SELECT p_id, name, count(p_id=winner_id) as matches
+    FROM players left join matches on winner_id = p_id or loser_id = p_id
+    group by p_id );
+
+CREATE VIEW v_standings AS (
+    SELECT id, name
+       case when wins is NULL then 0 else wins end, matches
+    FROM v_matchcount left join v_wincounts
+    on p_id = winner_id
+    order by wins );
+
+
+--Creates a view that shows player standings in tournament;
+CREATE VIEW standings as (
+    SELECT p.p_id, p.name, COUNT(m.winner_id) as winCount, COUNT(m.m_id) as matchCount
+    FROM players p LEFT JOIN matches m ON p.p_id = m.winner_id OR p.p_id = m.loser_id
+    GROUP BY p.p_id                        
+    ORDER BY winCount DESC, matchCount DESC 
+);
+
+--# create a view that shows player aggregate matches across 
+-- https://github.com/DavyK/udacityFSWD_p2/blob/master/tournament.sql
+-- https://github.com/ghunt03/P2---Swiss-Tournament/blob/master/tournament.py
+
+
 -- --Creates a view that counts the number of wins each player has in a tournament;
 -- CREATE VIEW player_wins AS (
 --     SELECT players.id, players.name, COUNT(winner_id) as num_wins, players_in_tournaments.tournament_id
@@ -46,25 +78,3 @@ CREATE TABLE matches  ( m_id serial primary key NOT null,
 --     LEFT JOIN players_in_tournaments ON p.p_id = players_in_tournaments.player_id
 --     ORDER BY matchCount DESC
 -- ); sum(count(m.winner_id) + count(m.loser_id))
-
---Creates a view that shows player standings in tournament;
-CREATE VIEW standings as (
-    SELECT p.p_id, p.name, COUNT(m.winner_id) as winCount, COUNT(m.m_id) as matchCount
-    FROM players p LEFT JOIN matches m ON p.p_id = m.winner_id OR p.p_id = m.loser_id
-    GROUP BY p.p_id                        
-    ORDER BY winCount DESC, matchCount DESC 
-);
-
---# create a view that shows player aggregate matches across 
--- https://github.com/DavyK/udacityFSWD_p2/blob/master/tournament.sql
--- https://github.com/ghunt03/P2---Swiss-Tournament/blob/master/tournament.py
-
-
-
--- -- combines player_match_counts and player_match_wins
--- CREATE VIEW player_standings AS (
---     SELECT player_match_count.id, player_match_count.name, num_wins, num_matches, player_match_count.tournament_id
---     FROM player_win_count, player_match_count
---     WHERE player_win_count.id = player_match_count.id
---     AND player_win_count.tournament_id = player_match_count.tournament_id
--- );
