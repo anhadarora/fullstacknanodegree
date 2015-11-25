@@ -1,27 +1,42 @@
-# Leafer's Linux
+The IP address and SSH port to access the server:
+52.33.182.173
+ssh -i ~/.ssh/udacity_key.rsa root@52.33.182.173
 
-Leafer's Linux {insert function} Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree.
-* managing users, packages, software, 
-* authentication permissions, how linux manages file permissions, configuring a firewall
+The complete URL to hosted web app:
 
-### Table of contents
+A summary of software installed and configuration changes made:
+upgraded packages
+*****refer to the .bash_history files on the server
 
-* [Quick start](#quick-start)
-* [Creator](#creator)
+Third-party resources:
 
-### Quick start
+Open your ~/.ssh/udacity_key.rsa file in a text editor and copy the contents of that file.
+During the submission process, paste the contents of the udacity_key.rsa file into the "Notes to Reviewer" field.
 
-* [Download the latest release](https://github.com/mleafer/fullstacknanodegree.git).
-* Vagrant
-* Virtual Box
-* You need [Python 2.7.9](https://www.python.org/downloads/) installed on your computer.
-* Open and run {insert file to run} in your Python IDE (IDLE was used in creation).
-* {insert expected outcome}
-* Linux, Mac OS X
-
-### Creator
-
-**Marie Leaf**
-
-* <https://twitter.com/mleafer>
-* <https://github.com/mleafer>
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAxw1ulMZaSNPsd/7UgJcO4Q3X1RJjMPlmtwORClyi0U0W0loy
+Bu+oOGdhLTCKOhAxw/SlRoavAbk6NHJPhUD2IvvPHfQ6EzQXFNwDeWD5JhAUIBkB
+Y6HPzZaQ/eGyDbSoxCcrfqzPZxwErkF8JkJz8SclVuOlVkSDwafHOgVqtfsnlDkK
+dlGFVENLvS0gzdfJxtL+kvg7lTHf2gt77Ri5m5AvKs/IjvQoTXjJHCq0PShHBmTE
+exDwSn+HXLeORXYY9YLFUNxwlE6jr0CbyR1RWcnCgHKSZYwgU+h+rk4Hn21nPX/B
+cM9Ui0YFIJTVDDK4mmeg3ZykqvKt/LPPSHG+owIDAQABAoIBAQCJS8Z+b+JOYX61
+tdu1Znwo13eLzEcGvMAQdDFSyFq1q0qWhQgEqMGLRiNNHDH7orfwxYpKfxOvSKfR
+DRe0ff5IWw+dRZvZKxDQnoD28+BmVKjNCvJeWnoPAE+6DjbWJUpTIgFqOqBEKps/
+5oNPkH6QU8P5jsO4IUIQDT3p01qrcf11iqOxec1xbBE9vg2/2DLQnZVgHSwoPMVb
+Jyp//8TETF9mEokqOXvf/mDJh9kTYxW5ppP8GzvuTfrmFPN4lOiQiSqMowTtUPgf
+YzAnYscAoRZmD/JxXpwkOL4cCeeLch0HcSF+MXoN/EpiQ3h98He48kCsHbQqW4gu
+Mai+kkchAoGBAOdrZA3aAT3whBzbUuCoO7OkjnJeKFyBai7WUGMZQ6hOMS9DwU20
+zWo7KnzGADKS/AmPVldsndBDQPYeFofl7HaLAjS8XkXYkuZOgSn0doeT6zZhqbWu
+9dXI6a3Utugi8y9r9eAzStgaPhRJpZRLUP1IVOghpKoUpjf2LCaN+VrvAoGBANwx
+8Bhh4iWSw/48fZpuM3uumZkQQi0bv6QDI5AIFGDEocgvcbQo2uOH7e2xhX0AqRis
+MsB+kCp2afDW4TbdQkV8XZI/A8PAY5yqSG3aElSX0MeoI2cdYTrIfi3+fePbM8mg
+TTubPP4E2a55klaDzeDe/ENybIyEOTEVRDo/w+eNAoGAS33x5r7eNtl2D3/Qmm7n
+AuREf7SNkBe7jsnk8V71fjr7uoJs1a+MbwIcCxYATH88btXugZhyJtU5pNAN44ky
+yTzxnEhyrHBJA45Kfmg8HmA3k8bqONV5ZqMi78z7WeDE2gxq6hdxa+uroqyfsi+b
+nPRylkMbV0xjKNBKeM1JscsCgYAzSO5Cv4mMdsJvVGdssH4NMH1VyROgrfXUnWaL
+BVa5sxJ7LZGuBFX26JHh6pbMpnq75F9ttgyd1zaVgXay8JWe2Xhxt3uI/CY3NvHn
+pALg8PsPhXm5an5a0peQ3tUzXLqTG2LhnyZ1g2uv12DeBZTN6yGWE/B0SdeINwvN
+BUz7gQKBgQCam5EJQDkSgMJy6X6dbcZLzSpky1ZNxW7C5MWhRrHxZyFfVFnII1OW
+TVhLLNd6pHaoO/Nl7lGX0Sdb/A1f5wiwYpvunjzAsRafrFK2Paz+Zw5LOOCVbUh/
+xPcM7ENXXHZekI8GnmSD6X6iS3T1/H3wzSSvV1qza4jqob2NZiZIOw==
+-----END RSA PRIVATE KEY-----
