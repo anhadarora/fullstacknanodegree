@@ -52,7 +52,7 @@ ANNOUNCEMENT_TPL = ('Last chance to attend! The following conferences '
 
 # TODO task 4
 MEMCACHE_SESSIONS_KEY = "SPEAKER_SESSIONS"
-SESSIONS_TPL = 
+SESSIONS_TPL = ""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 DEFAULTS = {
