@@ -21,24 +21,14 @@ def _copySessionToForm(self, sesh, websafeConferenceKey): # TODO 1 is it suppose
     sf.check_initialized()
     return cf
 
-def _createSession(self, request):
+
+def _createSessionObject(self, request):
 """ -- open only to the organizer of the conference"""
-    # preload necessary data items
-    # ensure user = organizer of the conference
-    user = endpoints.get_current_user()
-    if not user:
-        raise endpoints.UnauthorizedException('Authorization required')
-    user_id = getUserId(user)
-
-    if not request.name:
-        raise endpoints.BadRequestException("Conference 'name' field required")
-
-    # fetch existing conference
-    conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-
+    # load necessary data items from the sess
     # copy SessionForm/ProtoRPC Message into dict
     data = {field.name: getattr(request, field.name) for field in request.all_fields()}
     # del data['websafeConferenceKey']
+    # del data['organizerDisplayName']
 
     # add default values for those missing (both data model & outbound Message)
     for df in DEFAULTS:
@@ -53,70 +43,69 @@ def _createSession(self, request):
         data['month'] = 0
 
 
-    # generate Session Key based on user ID and Conference name
+    # generate Session Key based on Conference key and organizer(?)
     # ID based on Profile key get Conference key from ID
     c_key = ndb.Key(Conference, conf.key.id())
     s_id = Session.allocate_ids(size=1, parent=c_key)[0]
     s_key = ndb.Key(Session, s_key, parent=c_key)
 
-    data['key'] = c_key
+    data['key'] = s_key
     data['organizerUserId'] = request.organizerUserId = user_id
 
     Session(**data).put()
 
     # check to see if speaker exists in other sections, add to memcache if so
 
-    return ""
-
-def _copySessionToForm(self, sesh):
-    """Copy relevant fields from Session to SessionForm."""
-    sf = SessionForm()
-    for field in sf.all_fields():
-        if hasattr(sesh, field.name):
-            # convert Time and Date to date string; just copy others
-            if field.name in ['startTime', 'date']:
-                setattr(sf, field.name, str(getattr(sesh, field.name)))
-            else:
-                setattr(sf, field.name, getattr(sesh, field.name))
-        elif field.name == "websafeKey":
-            setattr(cf, field.name, conf.key.urlsafe())
-    sf.check_initialized()
-    return sf
+    #return session form
+    return self._copySessionToForm(s_key.get())
 
 
-@endpoints.method(SessionForm, SessionForm, path='sessions',
+@endpoints.method(SessionForm, SessionForm, path='conference/{websafeConferenceKey}/createsession',
         http_method='POST', name='createSession')
 def createSession(self, request):
     """Create new Session in Conference."""
-    return self._createSession(request)
-
-
-
-
-@endpoints.method(SESSION_GET_REQUEST, SessionForms, path='session/{websafeConferenceKey}',
-        http_method='GET', name='getConferenceSessions')
-def getConferenceSessions(self, request):
-    """Return requested sessions (by websafeConferenceKey)."""
-    # make a query object for a specific ancestor
-    seshs = Session.query(ancestor=ndb.Key(Conference, websafeConferenceKey)
-
-    # return SessionForms
-    return SessionForms(
-        items=[self._copySessionToForm(seshs, getattr(prof, 'displayName'))
-
-
-    data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-    # get Conference object from request; bail if not found
+    # fetch existing conference
     conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
     if not conf:
         raise endpoints.NotFoundException(
-            'No conference found with key: %s' % request.websafeConferenceKey)
+            'No conference found with key: %s' % request.websafeKey)
+
+    #fetch user
+    user = endpoints.get_current_user()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+    user_id = getUserId(user)
+
+    # ensure user = organizer of the conference
+    owner = conf.key.parent().id()
+    if owner != user_id:
+        raise endpoints.UnauthorizedException("User (%s) is not the owner of the conference (%s)"%(user_id,owner))
+    if not request.name:
+        raise endpoints.BadRequestException("Conference 'name' field required")
+
+
+    return self._createSessionObject(request)
+    # return self._createSessionObject(request,conf.key,conf.name,user)  # why???
+
+
+
+
+@endpoints.method(message_types.VoidMessage, SessionForms, path='conference/{websafeConferenceKey}/sessions',
+        http_method='POST', name='getConferenceSessions')
+def getConferenceSessions(self, request):
+    """Return requested sessions (by websafeConferenceKey)."""
+    # make a query object for a specific ancestor
+    c_key = ndb.Key(Conference, websafeConferenceKey).get()
+    sessions = Session.query(ancestor=c_key)
+
+    # get parent conference key and name
+    conf = c_key.get()
+    name = getattr(conf, 'name') #why?
     
-    sesh = [(ndb.Key(Profile, conf.organizerUserId)) for session in conferences]
-    prof = ndb.get_multi(organisers)
-
-    prof = conf.key.parent().get()
-
+    # return set of SessionForm objects per session
+    return SessionForms(
+        items=[self._copySessionToForm(sesh, websafeConferenceKey) 
+                for sesh in sessions]
 
 
 
@@ -129,7 +118,9 @@ def getConferenceSessionsByType(websafeConferenceKey, typeOfSession):
     q = Session.query()
     return q.filter(Session.typeOfSession == typeOfSession)
 
-    return SessionForms(items=[self._copySessionToForm(sesh, "")])
+    return SessionForms(
+        items=[self._copySessionToForm(sesh, websafeConferenceKey)
+            for sesh in q])
 
 
 
@@ -143,11 +134,19 @@ def getSessionsBySpeaker(speaker):
     q = Session.query()
     return q.filter(Session.speaker == speaker)
 
+    return SessionForms(items=[self._copySessionToForm(sesh, websafeConferenceKey)] for sesh in q)
 
 
-# Explain in a couple of paragraphs your design choices for session and speaker implementation.
+"""
+Explain in a couple of paragraphs your design choices for session and speaker implementation.
 didn't create speaker as separate object, kept as a property (or create user as new attendee/user 
-bc helps with headcount and ensures all people in central store. e.g. if you need comprehensive user list for administrative purposes)
+bc helps with headcount and ensures all people in central store. 
+(e.g. if you need comprehensive user list for administrative purposes)
+
+created sessions as a separate 'kind' object to store different entities with speaker as a property?
+
+and sessions as a property of user profile
+"""
 
 
 
@@ -155,26 +154,86 @@ bc helps with headcount and ensures all people in central store. e.g. if you nee
 
 
 
-
-
-# Task 2: Add Sessions to User Wishlist
+"""# Task 2: Add Sessions to User Wishlist
 
 
 Users should be able to mark some sessions that they are interested in 
 and retrieve their own current wishlist. You are free to design the way this wishlist is stored.
+thought about putting as a user profile property, but not good bc of DB design rules, what if not all of them have a wishlist
+one wishlist per conference"""
 
 
-def addSessionToWishlist(SessionKey):
- # -- adds the session to the user's list of sessions they are interested in attending
 
-decide if they can only add conference they have registered to attend or if the wishlist is open to all conferences.
+def _createWishlistObject(self):
+    user = self._getProfileFromUser()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+    p_key = user.key
 
-def getSessionsInWishlist():
+    wish_list = Wishlist(parent=p_key)
+    wish_list.userID = user.mainEmail
+
+    wish_list.put()
+
+def _getSessionsInWishlist(self):
  """queries for all the sessions in a conference that the user is interested in"""
 
+    user = self._getProfileFromUser()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+    p_key = user.key
+    wish_list = Wishlist.query(ancestor=user.key).get() # put .get() after p_key = user.key instead?
+
+    return SessionForms(
+        items=[self._copySessionToForm(sesh, websafeConferenceKey)
+            for sesh in wish_list])
+
+# -OR-
+
+#     forms = SessionForms()
+
+#     for key in wishlist.sessionKeys:
+#         query = Session.query(Session.key == key).get()
+#         forms.items += [self._copySessionToForm(session=query)]
+
+#     return forms
 
 
 
+@endpoints.method(message_types.VoidMessage, SessionForms,
+                  path='conference/session/wishlist/get',
+                  http_method='GET',
+                  name='getSessionsInWishlist')
+def getSessionsInWishlist(self, request):
+    """Get Session from current user wishlist"""
+    return self._getSessionsInWishlist()
+
+
+@endpoints.method(WishlistForm, StringMessage,
+                  path='conference/{websafekey}/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
+                  http_method='POST',
+                  name='addSessionToWishlist')
+def addSessionToWishlist(self, request):
+ # -- adds the session to the user's list of sessions they are interested in attending decided that wishlist is open to all conferences so user can use as a bookmarking function 
+
+    user = self._getProfileFromUser()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+    p_key = user.key
+
+    confKey = request.websafeKey
+    SessionKey = request.websafeSessionKey
+
+    # query by user key as the ancestor
+    wish_list = Wishlist.query(ancestor=user.key).get() # do i need to have .get() at the end here?
+
+    if wish_list and wish_list.s_keys:
+        wish_list.s_keys.append(SessionKey) #where is this session key coming from?
+    else:
+        self._createWishlistObject(user)
+        wish_list.c_key = [confKey]
+        wish_list.s_keys = [SessionKey]
+    wish_list.put()
 
 
 
