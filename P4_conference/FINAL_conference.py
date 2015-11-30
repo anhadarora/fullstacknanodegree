@@ -247,18 +247,69 @@ def addSessionToWishlist(self, request):
 
 # Task 3: Work on indexes and queries
 
-Create indexes
+"""Create indexes
 
 Make sure the indexes support the type of queries required by the new Endpoints methods.
 Come up with 2 additional queries
 
 Think about other types of queries that would be useful for this application. 
-Describe the purpose of 2 new queries and write the code that would perform them.
+Describe the purpose of 2 new queries and write the code that would perform them."""
 
-Solve query related problem :
-You don't like workshops and you don't like sessions after 7 pm. 
-How would you handle a query for all non-workshop sessions before 7 pm? 
-What is the problem for implementing this query? What ways to solve it did you think of?
+
+1. query other attendees of a conference
+registeredusers of conference()
+
+def getConferenceSessionsByType
+
+2. query sessions  by type
+
+
+
+3. What is the problem for implementing this query? What ways to solve it did you think of?
+
+@endpoints.method(SessionQueryForms, SessionForms, path='sessions/{websafeConferenceKey}/',
+        http_method='GET', name='getConferenceSessionsByType')
+def getConferenceSessionsByType(websafeConferenceKey, typeOfSession):
+"""Given a conference, return all sessions of a specified type (eg lecture, keynote, workshop)"""
+
+    q = Session.query()
+    return q.filter(Session.typeOfSession != 'workshops' and Session.startTime <= 19:00)
+
+    return SessionForms(
+        items=[self._copySessionToForm(sesh, websafeConferenceKey)
+            for sesh in q])
+
+
+    def queryConferences(self, request):
+        """Query for conferences."""
+        conferences = self._getQuery(request)
+
+        # need to fetch organiser displayName from profiles
+        # get all keys and use get_multi for speed
+        organisers = [(ndb.Key(Profile, conf.organizerUserId)) for conf in conferences]
+        profiles = ndb.get_multi(organisers)
+
+        # put display names in a dict for easier fetching
+        names = {}
+        for profile in profiles:
+            names[profile.key.id()] = profile.displayName
+
+        # return individual ConferenceForm object per Conference
+        return ConferenceForms(
+                items=[self._copyConferenceToForm(conf, names[conf.organizerUserId]) for conf in \
+                conferences]
+        )
+
+
+
+
+
+
+
+
+
+
+
 
 
 

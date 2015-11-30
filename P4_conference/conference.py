@@ -350,7 +350,7 @@ class ConferenceApi(remote.Service):
 
 
     def _getProfileFromUser(self):
-        """Return user Profile from datastore, creating new one if non-existent."""
+        """Return user Profile from datastore (with a key), creating new one if non-existent."""
         # make sure user is authed
         user = endpoints.get_current_user()
         if not user:

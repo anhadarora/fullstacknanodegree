@@ -41,7 +41,7 @@ class CacheSessionsHandler(webapp2.RequestHandler):
     def post(self):
         """Sends sessions by one speaker at a single conference to the memcache"""
         ConferenceApi.cacheSessions()
-        self. # TODO task 4
+        # self. # TODO task 4
 
 
 app = webapp2.WSGIApplication([
