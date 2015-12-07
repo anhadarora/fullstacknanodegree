@@ -256,16 +256,55 @@ Think about other types of queries that would be useful for this application.
 Describe the purpose of 2 new queries and write the code that would perform them."""
 
 
-1. query other attendees of a conference
+1. query other attendees of a conference (not query registeredconferences and list other attendees where other )
 registeredusers of conference()
 
-def getConferenceSessionsByType
 
-2. query sessions  by type
+@endpoints.method(message_types.VoidMessage, ProfileFeedForms,
+        path='conference/{websafeConferenceKey}/sociallist',
+        http_method='POST', name='getSocialFeed')
+def getSocialFeed(self, request):
+    # fetch existing conference
+    conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+    if not conf:
+        raise endpoints.NotFoundException(
+            'No conference found with key: %s' % request.websafeKey)
+
+    #fetch user
+    user = endpoints.get_current_user()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+    user_id = getUserId(user)
+
+    # pull up other users of that conference
+    profs = Profile.query()
+    profs.filter(Profile.conferenceKeysToAttend == conf ))
+
+    # return other users of that conference
+    return ProfileForm(
+
+    items=[self._copyConferenceToForm(conf, getattr(prof, 'displayName')) for conf in confs]
+)
+
+q.Profile.query().filter(Profile.conferenceKeysToAttend == conf)
+
+class SocialForm(messages.Message):
+    """ProfileFeedForm -- Profile Feed outbound form message"""
+    displayName = messages.StringField(1)
+    conferenceKeysToAttend = messages.StringField(2, repeated=True)
+
+class SocialForms(messages.Message):
+    """ConferenceForms -- multiple Conference outbound form message"""
+    socialList = messages.MessageField(ConferenceForm, 1, repeated=True)
+
+
+2. query all sessions by type, query past sessions?
 
 
 
 3. What is the problem for implementing this query? What ways to solve it did you think of?
+
+This query requires an inequality filter, and datastore only supports inequality filtering on a single property (not multiple properties)
 
 @endpoints.method(SessionQueryForms, SessionForms, path='sessions/{websafeConferenceKey}/',
         http_method='GET', name='getConferenceSessionsByType')

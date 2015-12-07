@@ -51,3 +51,11 @@ class WishlistForm(messages.Message):
     websafeSessionKey = messages.StringField(2)
     websafeKey = messages.StringField(3)
 
+
+
+class ProfileFeedForm(messages.Message):
+    """ProfileFeedForm -- Profile Feed outbound form message"""
+    displayName = messages.StringField(1)
+    conferenceKeysToAttend = messages.StringField(2, repeated=True)
+    
+
