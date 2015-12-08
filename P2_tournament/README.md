@@ -1,6 +1,6 @@
 # Leafer's Tournament
 
-Leafer's Tournament {insert function} Created by [Marie Leaf](https://twitter.com/mleafer), for Project 2 of Udacity's Fullstack Nanodegree.
+Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 2 of Udacity's Fullstack Nanodegree.
 
 
 ### Table of contents
