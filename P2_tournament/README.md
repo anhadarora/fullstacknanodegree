@@ -1,12 +1,13 @@
 # Leafer's Tournament
 
-Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 2 of Udacity's Fullstack Nanodegree.
+Leafer's Tournament runs a Swiss-Style tournament and supports more than one tournament in the database. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 2 of Udacity's Fullstack Nanodegree.
 
 
 ### Table of contents
 
 * [Quick start](#quick-start)
 * [Creator](#creator)
+* [Concepts](#concepts)
 
 ### Quick start
 
@@ -14,8 +15,8 @@ Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https
 * Vagrant
 * Virtual Box
 * You need [Python 2.7.9](https://www.python.org/downloads/) installed on your computer.
-* Open and run {insert file to run} in your Python IDE (IDLE was used in creation).
-* {insert expected outcome}
+* Open and run tournament_test.py in your terminal
+* All tests should pass!
 * Linux, Mac OS X
 
 ### Creator
@@ -24,3 +25,9 @@ Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https
 
 * <https://twitter.com/mleafer>
 * <https://github.com/mleafer>
+
+### Concepts 
+* PostgreSQL
+* Database schema design
+* Proper relationship architecture
+* Normalize, persist, query data
