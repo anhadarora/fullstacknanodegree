@@ -56,9 +56,10 @@ def countPlayers():
     return result
 
 # extra credit
-# """Support more than one tournament in the database, so matches do not have 
-# to be deleted between tournaments. This will require distinguishing between 
+# """Support more than one tournament in the database, so matches do not have
+# to be deleted between tournaments. This will require distinguishing between
 # player and a player who has entered in tournament (a participant) """
+
 
 def registerTournament(name):
     """Add a tournament to the tournament database.
@@ -77,13 +78,12 @@ def registerTournament(name):
     db.close()
 
 
-
 def registerPlayer(name=''):
     """Adds a player to the overall league.
-  
+
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
-  
+
     Args:
       p_id: the player's member id.
     """
@@ -110,12 +110,11 @@ def registerParticipant(player, tournament):
     db.close()
 
 
-
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place,
+    or a player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -129,7 +128,7 @@ def playerStandings():
     c.execute("SELECT * FROM v_standings;")
     results = []
     for row in c.fetchall():
-        if row[2] == None:
+        if row[2] is None:
             wins = 0
         else:
             wins = row[2]
@@ -140,14 +139,14 @@ def playerStandings():
 
 def playerStandingsTournament(tournament):
     """
-    Returns a list of the players and their win records, sorted by wins, for a 
+    Returns a list of the players and their win records, sorted by wins, for a
     single tournament.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place,
+    or a player tied for first place if there is currently a tie.
 
     Arg:
-        tournament: tournament's t_id 
+        tournament: tournament's t_id
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -162,7 +161,7 @@ def playerStandingsTournament(tournament):
               "WHERE t_id = tournament;")
     results = []
     for row in c.fetchall():
-        if row[2] == None:
+        if row[2] is None:
             wins = 0
         else:
             wins = row[2]
@@ -170,8 +169,10 @@ def playerStandingsTournament(tournament):
     db.close()
     return results
 
+
 def reportMatch(win_id='', lose_id=''):
-    """Records the outcome of a single match between two players to the matches table.
+    """Records the outcome of a single match between two players to the matches
+    table.
 
     Args:
       win_id: the id number of the player who won
@@ -180,15 +181,17 @@ def reportMatch(win_id='', lose_id=''):
     """
     # set records of match both in match table and player table
     db = connect(dbname)
-    c = db.cursor() 
+    c = db.cursor()
     c.execute("INSERT INTO matches (winner_id, "
               "loser_id) "
               "VALUES (%s, %s)", (win_id, lose_id))
     db.commit()
     db.close()
 
+
 def reportMatchToTournament(win_id='', lose_id='', t_id=''):
-    """Records the outcome of a single match between two players to the matches table.
+    """Records the outcome of a single match between
+    two players to the matches table.
 
     Args:
       t_id: tournament id
@@ -198,7 +201,7 @@ def reportMatchToTournament(win_id='', lose_id='', t_id=''):
     """
     # set records of match both in match table and player table
     db = connect(dbname)
-    c = db.cursor() 
+    c = db.cursor()
     c.execute("INSERT INTO matches (winner_id, "
               "loser_id, t_id) "
               "VALUES (%s, %s, %s)", (win_id, lose_id, t_id,))
@@ -220,29 +223,28 @@ def swissPairings():
     the ID and name of the paired players. For instance, if there are eight
     registered players, this function should return four pairings. This
     function should use playerStandings to find the ranking of players.
-  
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
         name1: the first player's name
         id2: the second player's unique id
         name2: the second player's name
-        diff: the absolute difference in players' match points for unique tournament
     """
     db = connect(dbname)
-    c = db.cursor()
-    standings = [(playerInfo[0], playerInfo[1]) for playerInfo in playerStandings()]
+    standings = [(playerInfo[0], playerInfo[1])
+                 for playerInfo in playerStandings()]
     if len(standings) < 2:
         raise KeyError("Not enough players.")
-    i=0
+    i = 0
     pairings = []
     while i < len(standings):
         p_id = standings[i][0]
         p_name = standings[i][1]
-        o_id = standings[i+1][0]
-        o_name = standings[i+1][1]
+        o_id = standings[i + 1][0]
+        o_name = standings[i + 1][1]
         pairings.append((p_id, p_name, o_id, o_name))
-        i=i+2
+        i = i + 2
 
     db.commit()
     db.close()
