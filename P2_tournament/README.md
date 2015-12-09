@@ -12,10 +12,11 @@ Leafer's Tournament runs a Swiss-Style tournament and supports more than one tou
 ### Quick start
 
 * [Download the latest release](https://github.com/mleafer/fullstacknanodegree.git).
-* Set up your Vagrant Machine, and Virtual Box
+* Set up your [Vagrant Machine](https://www.vagrantup.com/), and [Virtual Box](https://www.virtualbox.org/).
+* Clone the [Fullstack VM Repo](https://github.com/udacity/fullstack-nanodegree-vm) for config files. 
 * Install [Python 2.7.9](https://www.python.org/downloads/).
 * Install [PostgreSQL](http://www.postgresql.org/download/).
-  * Ensure PostgreSQL is set up
+  To ensure PostgreSQL is set up:
    
    ```vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql
    psql (9.3.5)
