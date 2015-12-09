@@ -7,16 +7,28 @@ Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https
 
 * [Quick start](#quick-start)
 * [Creator](#creator)
+* [Concepts](#concepts)
 
 ### Quick start
 
 * [Download the latest release](https://github.com/mleafer/fullstacknanodegree.git).
-* Vagrant
-* Virtual Box
-* You need [Python 2.7.9](https://www.python.org/downloads/) installed on your computer.
-* Open and run {insert file to run} in your Python IDE (IDLE was used in creation).
-* {insert expected outcome}
-* Linux, Mac OS X
+* Set up your Vagrant Machine, and Virtual Box
+* Install [Python 2.7.9](https://www.python.org/downloads/).
+* Install [PostgreSQL](http://www.postgresql.org/download/).
+..* Ensure PostgreSQL is set up
+...```vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql
+...psql (9.3.5)
+...Type "help" for help.```
+* Create database
+.```vagrant=> CREATE DATABASE tournament;
+.CREATE DATABASE
+.vagrant=> \q```
+*Load SQL schema into database
+.```vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql tournament < tournament.sql```
+* Open and run tournament_test.py in your terminal
+.```vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ python tournament_test.py```
+.All tests should pass!
+* (This was run on Linux, Mac OS X)
 
 ### Creator
 
@@ -24,3 +36,9 @@ Leafer's Tournament runs a Swiss-Style tournament. Created by [Marie Leaf](https
 
 * <https://twitter.com/mleafer>
 * <https://github.com/mleafer>
+
+### Concepts
+* PostgreSQL
+* Database schema design
+* Proper relationship architecture
+* Normalize, persist, query data
