@@ -41,8 +41,6 @@ Leafer's Tournament runs a Swiss-Style tournament and supports more than one tou
  vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ python tournament_test.py
  ```
 
-* (This was run on Linux, Mac OS X)
-
 ### Creator
 
 **Marie Leaf**
