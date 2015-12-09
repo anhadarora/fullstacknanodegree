@@ -23,7 +23,9 @@ Leafer's Tournament runs a Swiss-Style tournament and supports more than one tou
 * Create database
 
  ```vagrant=> CREATE DATABASE tournament;```
+ 
  ```CREATE DATABASE```
+ 
  ```vagrant=> \q```
 
 *Load SQL schema into database
