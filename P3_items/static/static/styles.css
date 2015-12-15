@@ -1,0 +1,340 @@
+body  { color:#F0F8FF; 
+		font-family: sans-serif; /*background-image: url('img3.jpg'); */
+		background-color: #56C9CC;
+		padding: 10px;
+		}
+* {
+	font-family: "Helvetica Neue Bold", Roboto, Helvetica, Arial, sans-serif;
+	font-weight: 700;
+	border: 1px ;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+
+h1, h2, h3, h4  { color: #F0F8FF; }
+h1, h2          { font-family: sans-serif; margin: 5px; }
+h1              { border-bottom: 1px solid #eee; padding-bottom: 5px;}
+h2              { font-size: 1.2em; }
+p, dd, dt       { color: #F0F8FF; margin: 5px;}
+
+a {text-decoration: none; color:#F0F8FF; font-size: .75em; margin: 0px;}
+
+
+A:link				{color:white} 
+A:visited 			{color:yellow}
+
+.container  {position: relative; color:#F0F8FF; font-family: sans-serif; /*background-image: url('img3.jpg'); */background-color: #56C9CC}
+.pane {position:absolute; border: 2px solid;
+    border-radius: 25px; padding: 5px; margin: 5px; border-color: #F0F8FF; background-color: #56C9CC }
+.header         { text-align: center;}
+.name {width:50%;display: inline-block; float: left;}
+.description {}
+.price {text-align: right; width:50%; float: right; }
+.editdeletepane{}
+.btn {
+    border-radius: 10px;
+}
+.navbar-brand,
+.navbar-brand:hover {
+    color: #FFFFFF;
+    font-size: 25px;
+    font-weight: bold;
+}
+.navbar-btn {
+    background-color: #81DDE1;
+    color: #FFFFFF;
+    border-radius: 10px;
+}
+
+.row {
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.col-1 {
+    width: 8.33%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-2 {
+    width: 16.66%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-3 {
+    width: 25%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-4 {
+    width: 33.33%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-5 {
+    width: 41.66%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-6 {
+    width: 50%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-7 {
+    width: 58.33%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-8 {
+    width: 66.66%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-9 {
+    width: 75%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-10 {
+    width: 83.33%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-11 {
+    width: 91.66%;
+    display: flex; flex-wrap: wrap;
+}
+
+.col-12 {
+    width: 100%;
+    display: flex; flex-wrap: wrap;
+}
+/*.flash   {color: ; position:absolute; border: 2px solid;
+    border-radius: 25px; padding: 5px; margin: 5px; border-color: #F0F8FF; background-color: #cee5F5; }*/
+
+.flash {
+	background-color: #56C9CC;
+	width:100%;
+	text-decoration: none;
+	text-align: center;
+
+}
+
+.flash li {
+	list-style-type: none;
+	text-align: center;
+
+}
+/*
+
+h1 {
+	font-family: "Helvetica Neue Light", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 50px;
+	color: #51453B;
+	line-height: 60px;
+	font-weight: 300;
+}
+
+h2 {
+	font-size: 24px;
+	color: #42C3C9;
+	line-height: 29px;
+}
+
+h3 {
+	font-size: 18px;
+	color: #4A4A4A;
+	line-height: 23px;
+}
+ p {
+ 	font-family: "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
+ 	font-size: 16px;
+ 	color: #7B7573;
+ 	line-height: 24px;
+ 	font-weight: 400;
+ }
+
+ strong {
+ 	font-size: 16px;
+ 	color: #7B7573;
+ 	line-height: 24px;
+ }
+
+ a {
+ 	font-size: 14px;
+ 	color: #0093B9;
+ 	line-height: 17px;
+ }
+.padding-top {
+	padding-top: 30px;
+}
+.padding-bottom {
+	padding-bottom: 30px;
+}
+.margin-right {
+	margin-right: 30px;
+}
+.padding-none {
+	padding: 0;
+}
+.btn {
+	padding: 20px;
+	margin: 0;
+	border-color: #9FB80A;
+	border-width: 2px;
+	color: #9FB80A;;
+}
+.btn:hover {
+	border-color: #9FB80A;
+}
+.btn.delete {
+	border-color: #aaaaaa;
+	color: #aaaaaa;
+}
+.btn.delete:hover {
+	border-color: #aaaaaa;
+	color: red;
+}
+.glyphicon {
+	margin-right: 10px;
+}
+.top-menu {
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+.top-menu p {
+	margin-bottom: 0;
+	line-height: 16px;
+}
+.top-menu a {
+	margin-bottom: 0;
+	line-height: 16px;
+	font-size: 16px;
+	color: #7B7573;
+	font-weight: 400;
+}
+.divider {
+	height: 15px;
+}
+.divider.blue {
+	background-color: #42C3C9;
+}
+.divider.green {
+	background-color: #9FB80A;
+}
+.banner.main {
+	height: 150px;
+	background: url("/static/top-banner.jpg");
+	background-position: right;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.banner.menu {
+	height: 150px;
+	background-color: #E1E17F;
+}
+.banner.profile {
+	height: 150px;
+	background-color: #A6E8EB;
+}
+.banner h1 {
+	margin: 45px 0;
+}
+ .restaurant-list {
+ 	background-color: #F0F0F0;
+ 	padding: 20px;
+u }
+ .restaurant-list:hover {
+ 	background-color: #e1e17f;
+ 	padding: 20px;
+}
+.menu-item {
+	background: #F0F0F0;
+	padding: 20px;
+	margin: 20px;
+	margin-left: -20px;
+}
+.menu-price {
+	font-weight: 700;
+}
+.creator {
+	padding-right: 20px;
+	margin-top: -20px;
+	text-align: right;
+	float:right;
+}
+.creator img {
+	width: 100px;
+	border-radius: 50%;
+}
+.creator figcaption {
+	font-size: 14px;
+	color: #7B7573;
+	font-weight: 400;
+	margin-top: -20px;
+}*/
+
+
+
+/*.navbar {
+    background-color: #000066;
+}
+
+.navbar a {
+    color: #FFFFFF;
+    font-weight: bold;
+}*/
+
+
+
+/*.navbar-toggle {
+    border-color: #ddd;
+}
+
+.navbar-toggle .icon-bar {
+    background-color: #888;
+}
+*/
+
+/* depends on @screen-md bootstrap variable set to 992px */
+/* http://stackoverflow.com/questions/17575193/best-way-to-put-a-vertical-line-in-the-twitter-bootstrap-gutter */
+/*@media (min-width:992px) {
+    body > .container [class*='col-']:not(:first-child) {
+        border-left: 3px solid #DDD;
+        padding-left: 30px;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }*/
+    /* ensure border fills entire box */
+    /* http://getbootstrap.com.vn/examples/equal-height-columns/ */
+/*    .row-eq-height {
+        display: flex;
+    }
+}
+
+body > .container [class*='col-'] {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+body > .container li {
+    list-style-type: none;
+}
+body > .container li,
+body > .container .body-bold {
+    font-size: 16px;
+    font-weight: bold;
+}
+body > .container ul {
+    padding: 0px;
+    margin: 0px;
+}*/
