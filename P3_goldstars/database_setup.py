@@ -24,6 +24,7 @@ class domain(Base) :
 	name = Column(String(80), nullable = False)
 	userID = Column(Integer, ForeignKey('user.userID'))
 	pullUser = relationship(user)
+	# starcounter = relationship(event) TODO
 	
 	@property
 	def serialize(self):
@@ -42,7 +43,8 @@ class event(Base):
 	name = Column(String(80), nullable = False)
 	category = Column(String(250))
 	description = Column(String(250))
-	stars = Column(String(8))
+	thumbnail_url = Column(String(255))
+	stars = Column(Integer, nullable = False)
 	domID = Column(Integer, ForeignKey('domain.domID'))
 	dom = relationship(domain)
 	userID = Column(Integer, ForeignKey('user.userID'))

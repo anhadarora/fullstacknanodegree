@@ -12,10 +12,10 @@
 <!--     <link rel="stylesheet" href="css/bootstrap.min.css"> -->
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
-
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   </head>
   <body>
-    <nav class="navbar navbar-inverse">
+    <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -28,14 +28,14 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse navbar-right">
           <ul class="list-inline">
-<!--           <li><a href="{{url_for('source')}}" class="text-muted">Fork me on GitHub</a></li> -->
+          <li><a href="{{url_for('source')}}" class="text-muted">Fork on GitHub</a></li>
           <li>{% if logged_in %}
-            <a href="{{url_for('disconnect')}}" class="btn btn-danger navbar-btn">
-              Logout
+            <a href="{{url_for('disconnect')}}" class="btn navbar-btn btn-primary ">
+            Logout
             </a>
           {% else %}
-            <a href="{{url_for('showLogin')}}" class="btn btn-success navbar-btn">
-              Login with <i class="fa fa-github"></i>
+            <a href="{{url_for('showLogin')}}" class="btn navbar-btn btn-primary">
+              Login
             </a>
           {% endif %}</li>
           </ul>
@@ -43,16 +43,7 @@
       </div>
     </nav>
 
-    <div class="container">
-      <div class="row">
-        <div class="col-md-3">
-          <h3>Domains</h3>
-          <ul class="list-unstyled">
-          {% for domain in domains %}
-            <li><a href="{{url_for('domains', domID=domain.domID)}}">{{domain.name}}</a></li>
-          {% endfor %}
-          </ul>
-        </div>
+        <!--Upon a redirect, create a message notifying the user of a successful action performed-->
         <div class="col-md-9">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

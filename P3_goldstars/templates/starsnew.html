@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <h3>New Event&nbsp;&nbsp;</h3>
+  <form class="form well" enctype="multipart/form-data" method="post" action="/domains/{{domain.domID}}/new">
+    <div class="form-group col-md-8">
+      <label for="name">Event</label>
+      <input class="form-control" name="name" type="text" placeholder="Name" autofocus required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="stars"># Stars</label>
+      <input class="form-control" name="stars" type="text" placeholder="1-5" autofocus required>
+    </div>
+      <div class="form-group col-md-8">
+        <label for="event-thumbnail-url">Thumbnail URL</label>
+        <input class="form-control" name="thumbnail_url" type="text" placeholder="http://placekitten.com/g/300/300">
+      </div>
+      <div class="form-group col-md-4">
+      </div>
+      <div class="form-group col-md-4">
+      </div>
+      <div class="form-group col-md-12">
+        <label for="description">Description</label>
+        <textarea class="form-control" name="description" rows="4" placeholder="Why do you deserve all this gold?"></textarea>
+      </div>
+      <div class="checkbox col-md-3">
+      </div>
+      <div class="col-md-offset-6 col-md-3">
+        <input type="submit" class="btn btn-success pull-right" value='Create'>
+        </input>
+      </div>
+      <div class="clearfix"></div>
+    </form>
+  </div>
+</div>  
+{% endblock %}

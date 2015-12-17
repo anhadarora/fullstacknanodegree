@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html>
-  <STYLE TYPE='text/css'> <!-- BODY { color:#F0F8FF; background-color:#56C9CC; font-family:sans-serif; } A:link{color:white} A:visited{color:yellow} --> </STYLE>
+{% extends "main.html" %}
+{% block content %}
+
 <head>
 		<!-- LOAD PRE-REQS FOR GOOGLE SIGN IN - create anonymous function that inserts the script into the DOM of the login.html page -->
    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
@@ -11,24 +11,23 @@
 
 </head>
 
-<body>
-<h1>
-The current session state is {{state}}
-</h1>
-
 <!-- GOOGLE PLUS SIGN IN BUTTON-->
-	<div id="signinButton">
-	<span class="g-signin"
-		data-scope="openid email" 
-		data-clientid="389143814135-u739n4gmiotv5m7rpnlcb96t4nni124c.apps.googleusercontent.com"
-		data-redirecturi="postmessage"
-		data-accsstype="offline"
-		data-cookiepolicy="single_host_origin"
-		data-callback="signInCallback"
-		data-approvalprompt="force">
-	</span>
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+    	<div id="signinButton">
+    	<span class="g-signin"
+    		data-scope="openid email" 
+        data-clientid="389143814135-7123ckrrmrokko2gkatp8mvcm7ftlkmf.apps.googleusercontent.com"   
+    		data-redirecturi="postmessage"
+    		data-accsstype="offline"
+    		data-cookiepolicy="single_host_origin"
+    		data-callback="signInCallback"
+    		data-approvalprompt="force">
+    	</span>
+    </div>
+  </div>
 </div>
-
 <div id="result"></div>
 
 <script>
@@ -48,7 +47,7 @@ function signInCallback(authResult) {
         if (result) {
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
          setTimeout(function() {
-          window.location.href = "/companies";
+          window.location.href = "/domains";
          }, 4000);
           
       } else if (authResult['error']) {
@@ -64,7 +63,4 @@ function signInCallback(authResult) {
 
 <!--END GOOGLE PLUS SIGN IN BUTTON -->
 
-  </body>
-
-  </html>
-  
+{% endblock %}

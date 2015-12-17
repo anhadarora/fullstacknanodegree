@@ -2,8 +2,7 @@ from flask import Flask, render_template, request, \
     redirect, url_for, flash, jsonify
 # import module for authorization/authentication
 from flask import session as login_session
-import random
-import string
+import random, string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, domain, event, user
@@ -23,7 +22,7 @@ import requests
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Goldstars App"
+APPLICATION_NAME = "healthitems-app"
 
 app = Flask(__name__)
 
@@ -333,7 +332,7 @@ def domains():
     session.rollback()
     dom = session.query(domain).all()
     if 'username' not in login_session:
-        return render_template('domainspublic.html', domain=dom)
+        return render_template('domains.html', domain=dom)
     else:
         return render_template('domains.html', domain=dom, logged_in=True)
 
@@ -349,10 +348,10 @@ def newDom():
         session.add(newdom)
         session.commit()
         flash("New domain created!")
-        return redirect(url_for('main.html'))
+        return redirect(url_for('domains'))
     else:
-        return render_template('newdom.html')
-
+        return render_template('domainsnew.html', domain=domain)
+        
 
 @app.route('/domains/<int:domID>/edit/', methods=['GET', 'POST'])
 def editDom(domID):
@@ -367,7 +366,7 @@ def editDom(domID):
         session.commit()
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('editdom.html', domain=domToEdit)
+        return render_template('domainsedit.html', domain=domToEdit)
 
 
 @app.route('/domains/<int:domID>/delete/', methods=['GET', 'POST'])
@@ -382,7 +381,7 @@ def deleteDom(domID):
         flash("domain deleted!")
         return redirect(url_for('domains'))
     else:
-        return render_template('deletedom.html', domain=domToDelete)
+        return render_template('domainsdelete.html', domain=domToDelete)
 
 # List all the events associated with a domain
 @app.route('/domains/<int:domID>/', methods=['GET', 'POST'])
@@ -392,11 +391,11 @@ def domevents(domID):
     events = session.query(event).filter_by(domID=domID).all()
     creator = getUserInfo(dom.userID)
     if 'username' not in login_session or creator.userID != login_session['user_id']:
-        return render_template('publicevents.html', domain=dom, events=events,
+        return render_template('stars.html', domain=dom, events=events,
                                creator=creator)
     else:
-        return render_template('events.html', domain=dom, events=events,
-                               creator=creator)
+        return render_template('stars.html', domain=dom, events=events,
+                               creator=creator, logged_in=True)
 
 
 # CRUD functions for events
@@ -404,19 +403,20 @@ def domevents(domID):
 def newevent(domID):
     if 'username' not in login_session:
         return redirect('/login')
+    session.rollback()
     dom = session.query(domain).filter_by(domID=domID).one()
-
     if request.method == 'POST':
         newevent = event(name=request.form['name'], stars=request.form['stars'],
                        description=request.form['description'],
                        category=request.form['category'], domID=domID,
-                       userID=login_session['user_id'])
+                       userID=login_session['user_id'], 
+                       thumbnail_url=request.form['thumbnail_url'])
         session.add(newevent)
         session.commit()
         flash("New event created!")
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('newevent.html', domain=dom)
+        return render_template('starsnew.html', domain=dom, domID=domID)
 
 
 @app.route('/domains/<int:domID>/events/<int:eventID>/edit/', methods=['GET', 'POST'])
@@ -438,7 +438,7 @@ def editevent(domID, eventID):
         session.commit()
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('editevent.html', domain=dom, event=eventToEdit)
+        return render_template('starsedit.html', domain=dom, event=eventToEdit)
 
 
 # Create a route for deleteMenuevent function here
@@ -455,7 +455,7 @@ def deleteevent(domID, eventID):
         session.commit()
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('deleteevent.html', domain=dom,
+        return render_template('starsdelete.html', domain=dom,
                                event=eventToDelete)
 
 # helper routes

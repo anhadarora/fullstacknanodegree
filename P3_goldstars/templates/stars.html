@@ -1,51 +1,58 @@
 {% extends "main.html" %}
 {% block content %}
   <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3 class="panel-title">
-        {{ title }}
+    <div class="pane-heading">
+      <h3 class="pane-title">
+        Events
       </h3>
+      {% if logged_in %}
+      <div class="media">
+        <a href="{{url_for('newevent', domID=domain.domID)}}">
+          <i class="glyphicon glyphicon-plus"></i>
+          Add some stars!
+        </a>
+      {% endif %} 
     </div>
+    {% for e in events %}
     <ul class="list-group">
       <li class="list-group-item">
         <div class="media">
           <div class="media-left">
-            <img class="media-object" width="64" src="{{course.thumbnail_url}}" alt="icon">
+            <img class="media-object" width="64" src="{{events.thumbnail_url}}" alt="icon">
           </div>
           <div class="media-body media-middle">
-            <a class="btn btn-primary pull-right" href="{{course.course_url}}">
-              <i class="glyphicon glyphicon-globe"></i>
-              Start
+            <a class="btn btn-primary pull-right" href="{{events.stars}}">
+              <i class="glyphicon glyphicon-star"></i>
             </a>
             <ul class="list-unstyled">
-              <li><strong class="media-heading">{{course.course_number}}</strong></li>
-              <li>Starts {{course.start_date}}</li>
-              {% if course.featured %}
+              <li><strong class="media-heading">{{events.eventID}}</strong></li>
+<!--               {% if events.featured %}
                 <li class="text-warning">
                   <i class="glyphicon glyphicon-star"></i>
                   Stars
                 </li>
-              {% endif %}
+              {% endif %} -->
             </ul>
           </div>
         </div>
       </li>
       <li class="list-group-item">
         <strong>Description</strong>
-        <p>{{course.description}}</p>
+        <p>{{e.description}}</p>
       </li>
 
-      {% if logged_in() and editable(course) %}
+      {% if logged_in %}
+<!--       todo ensure only creator of domain can add stars to user?  -->
       <li class="list-group-item clearfix">
         <ul class="list-inline pull-right">
           <li>
-            <a href="{{url_for('edit_course', course_id=course.id)}}">
+            <a href="{{url_for('editevent', domID=e.domID, eventID=e.eventID)}}">
               <i class="glyphicon glyphicon-pencil"></i>
               Edit
             </a>
           </li>
           <li>
-            <a class="text-danger" href="{{url_for('delete_course', course_id=course.id)}}">
+            <a class="text-danger" href="{{url_for('deleteevent', domID=e.domID, eventID=e.eventID)}}">
               <i class="glyphicon glyphicon-trash"></i>
               Delete
             </a>
@@ -53,6 +60,7 @@
         </ul>
       </li>
       {% endif %}
+      {% endfor %}
     </ul>
   </div>
 {% endblock %}

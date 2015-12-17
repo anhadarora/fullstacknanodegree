@@ -1,31 +1,63 @@
 {% extends "main.html" %}
 {% block content %}
-<body>
 
-<!--Upon a redirect, create a message notifying the user of a successful action performed-->
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-{% for message in messages %}
-  <li><strong>{{message}}</strong></li>
-  {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
+<!--  -->
+<!-- <div>
 
-<a href="{{url_for('newComp')}}">List a new company here</a>
-
-<h1>Domains:</h1>
-
-{% for d in domains%}
-<div>
-<h2>
-{{c.name}}
-</h2>
-<a href="{{url_for('domItems', domID=c.domID)}}">Events</a></br>
-<a href="{{url_for('editDom', domID=c.domID)}}">Edit</a></br> 
-<a href="{{url_for('deleteDom', domID=c.domID)}}">Delete</a></br>
-</br>
-</div>
+{% for e in events%}
+{{e.name}}
 {% endfor %}
+ -->
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <h3>Domains</h3>
+      <ul class="list-unstyled">
+        {% if logged_in %}
+		  <div class="media">
+		    <a href="{{url_for('newDom')}}">
+		      <i class="glyphicon glyphicon-plus"></i>
+		      New realm of life
+		    </a>
+  		{% endif %}	
+      {% for d in domain %}
+      <br>
+        <h2><li><a href="{{url_for('domevents', domID=d.domID)}}">{{d.name}}</a></li></h2>
+
+	    <div class="media">
+	    	<a href="{{url_for('domevents', domID=d.domID)}}">
+		      <i class="glyphicon glyphicon-star"></i>&nbsp;&nbsp;
+		      See stars
+		    </a>
+		</div>
+
+	  {% if logged_in %}
+	    <div class="media">
+	    <a href="{{url_for('editDom', domID=d.domID)}}">
+	      <i class="glyphicon glyphicon-edit"></i>&nbsp;&nbsp;
+	      Edit Domain
+	    </a>
+	  </div>
+	  <div class="media">
+	    <a href="{{url_for('deleteDom', domID=d.domID)}}">
+	      <i class="glyphicon glyphicon-minus"></i>&nbsp;&nbsp;
+	      Delete Domain
+	    </a>
+	  </div>
+	  <div class="media">
+	    <a href="{{url_for('newevent', domID=d.domID)}}">
+	      <i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;
+	      Add some stars!
+	    </a>
+	  </div>
+	  {% endif %}
+      {% endfor %}
+      </ul>
+    </div> 
+   </div>
+</div>
+
+
+
 {% endblock %}
