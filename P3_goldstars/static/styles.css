@@ -1,5 +1,5 @@
 body  { color:#F0F8FF; 
-		font-family: 'Roboto', sans-serif; /*background-image: url('img3.jpg'); */
+		font-family: 'Open Sans', sans-serif; /*background-image: url('img3.jpg'); */
 		background-color: #56C9CC;
 		padding: 10px;
 		}
@@ -19,7 +19,7 @@ body  { color:#F0F8FF;
 
 
 h1, h2, h3, h4  { color: #F0F8FF; background-color: #56C9CC;}
-h1, h2          { font-family: 'Roboto', sans-serif; margin: 5px;}
+h1, h2          { font-family: 'Open Sans', sans-serif; margin: 5px;}
 h1              { border-bottom: 1px solid #eee; padding-bottom: 2px;}
 h2              { font-size: 1.6em; }
 p, dd, dt       { color: #F0F8FF; margin: 6px;}
@@ -32,13 +32,14 @@ A:hover 			{color:#f7df2a}
 .container  {position: relative; color:#47476b; font-family: sans-serif; /*background-image: url('img3.jpg'); */background-color: #56C9CC}
 .pane {position:absolute; border: 2px solid;
     border-radius: 25px; padding: 5px; margin: 5px; border-color: #F0F8FF; background-color: #56C9CC }
+.pane-title {padding: 5px; margin: 5px;}
 
 .media,.list-group, .list-group-item, .panel, .panel-default, .panel-heading, .panel-title {  background-color: #56C9CC;
     border-color: #FFFFFF;
     color: #FFFFFF;}
 
 
-.header         { text-align: center;}
+.header      { text-align: center;}
 .name {width:50%;display: inline-block; float: left;}
 .description {}
 .stars {text-align: right; width:50%; float: right; }
@@ -54,20 +55,30 @@ A:hover 			{color:#f7df2a}
     border-color: #FFFFFF;
     color: #FFFFFF;
     font-size: 15px;
+    padding: 20px;
     font-weight: bold;
+    margin-bottom: 35px;
 }
 /* title */
  .navbar-default .navbar-brand {
     background-color: #56C9CC;
     color: #FFFFFF;
     font-size: 45px;
+	line-height: 45px;
     padding: 20px;
     font-weight: bold;
+	text-align: center;
 }
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
     background-color: #56C9CC;
     color: #f7df2a;
+}
+.container>.navbar-header {
+    margin-right: -15px;
+    margin-left: -15px;
+    margin-bottom: -15px;
+    margin-top: -15px;
 }
 
 }

@@ -18,14 +18,14 @@
       <li class="list-group-item">
         <div class="media">
           <div class="media-left">
-            <img class="media-object" width="64" src="{{events.thumbnail_url}}" alt="icon">
+            <img class="media-object" width="64" src="{{e.thumbnail_url}}" alt="icon">
           </div>
           <div class="media-body media-middle">
-            <a class="btn btn-primary pull-right" href="{{events.stars}}">
-              <i class="glyphicon glyphicon-star"></i>
+            <a class="btn btn-primary pull-right" href="{{url_for('domains')}}">
+              <i class="glyphicon glyphicon-star"></i>&nbsp;&nbsp;{{e.stars}}
             </a>
             <ul class="list-unstyled">
-              <li><strong class="media-heading">{{events.eventID}}</strong></li>
+              <li><strong class="media-heading"></strong><h2>{{e.name}}</h2></strong></li>
 <!--               {% if events.featured %}
                 <li class="text-warning">
                   <i class="glyphicon glyphicon-star"></i>

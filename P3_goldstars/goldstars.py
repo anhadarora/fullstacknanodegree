@@ -1,3 +1,4 @@
+# TODO - create scoreboard, do editing templates
 from flask import Flask, render_template, request, \
     redirect, url_for, flash, jsonify
 # import module for authorization/authentication
@@ -404,20 +405,20 @@ def newevent(domID):
     if 'username' not in login_session:
         return redirect('/login')
     session.rollback()
-    dom = session.query(domain).filter_by(domID=domID).one()
     if request.method == 'POST':
         newevent = event(name=request.form['name'], stars=request.form['stars'],
+                       thumbnail_url=request.form['thumbnail_url'],
                        description=request.form['description'],
                        category=request.form['category'], domID=domID,
                        userID=login_session['user_id'], 
-                       thumbnail_url=request.form['thumbnail_url'])
+                       )
         session.add(newevent)
         session.commit()
         flash("New event created!")
         return redirect(url_for('domevents', domID=domID))
     else:
+        dom = session.query(domain).filter_by(domID=domID).one()
         return render_template('starsnew.html', domain=dom, domID=domID)
-
 
 @app.route('/domains/<int:domID>/events/<int:eventID>/edit/', methods=['GET', 'POST'])
 def editevent(domID, eventID):
