@@ -3,52 +3,38 @@
 <div class="container">
   <div class="row">
     <div class="col-md-3">
-		  <h3>{{domain.name}}</h3>
-		  <form class="form well" id="event-form" name="event-form" role="form" method="POST" action="'/domains/<int:domID>/new'">
-		    <div class="form-group col-md-8">
-		      <label for="event-name">Event Name</label>
-		      <input class="form-control" name="event-name" type="text" placeholder="Learned to juggle" autofocus required>
-		    </div>
-		    <div class="form-group col-md-4">
-		      <label for="event-number">Event Number</label>
-		      <input class="form-control" name="event-stars" type="integer" placeholder="1-5">
-		    </div>
-		<!--     <div class="form-group col-md-8">
-		      <label for="event-url">Link</label>
-		      <input class="form-control" name="event-url" type="url" placeholder="http://www.reddit.com/r/juggling" required>
-		    </div> -->
-		    <div class="form-group col-md-4">
-		      <label for="event-domain">Domain</label>
-		      <select class="form-control" name="event-domain" form="event-form" >
-		        <option {% if not event.featured %}selected{% endif %}></option>
-		        {% for domain in domains %}
-		          <option value="{{domain.id}}" {% if domain.id == event.domain_id %}selected{% endif %}>{{domain.name}}</option>
-		        {% endfor %}
-		      </select>
-		    </div>
-		    <div class="form-group col-md-8">
-		      <label for="event-thumbnail-url">Thumbnail URL</label>
-		      <input class="form-control" name="event-thumbnail-url" type="url" placeholder="http://placekitten.com/g/300/300">
-		    </div>
-		    <div class="form-group col-md-4">
-		    </div>
-		    <div class="form-group col-md-12">
-		      <label for="event-description">Description</label>
-		      <textarea class="form-control" name="event-description" rows="4" placeholder="Why do you deserve all this gold?">{{event.description}}</textarea>
-		    </div>
-		    <div class="checkbox col-md-3">
-		      <label>
-		        <input name="event-featured" type="checkbox" {% if event.featured %}checked{% endif %}>
-		        Featured event
-		      </label>
-		    </div>
-		    <div class="col-md-offset-6 col-md-3">
-		      <input type="submit" class="btn btn-success pull-right">
-		      </input>
-		    </div>
-		    <div class="clearfix"></div>
-		  </form>
-		</div>
-	</div>
-</div>		
+	   <h3><a href="{{url_for('domevents', domID=domain.domID)}}">{{domain.name}}</a></h3>
+	  <form class="form well" id="event-form" name="event-form" role="form" method="POST" action="/domains/{{domain.domID}}/events/{{event.eventID}}/edit/">
+    <div class="form-group col-md-8">
+      <label for="name">Event</label>
+      <input class="form-control" name="name" type="text" placeholder="{{event.name}}" autofocus required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="stars"># Stars</label>
+      <input class="form-control" name="stars" type="text" placeholder="{{event.stars}}" autofocus required>
+    </div>
+      <div class="form-group col-md-8">
+        <label for="event-thumbnail-url">Thumbnail URL</label>
+        <input class="form-control" name="thumbnail_url" type="text" placeholder="{{event.thumbnail_url}}">
+      </div>
+      <div class="form-group col-md-4">
+      <label for="category">Category</label>
+        <input class="form-control" name="category" type="text" placeholder="TODO define categories">
+      </div>
+      <div class="form-group col-md-4">
+      </div>
+      <div class="form-group col-md-12">
+        <label for="description">Description</label>
+        <textarea class="form-control" name="description" rows="2" placeholder="{{event.description}}"></textarea>
+      </div>
+      <div class="checkbox col-md-3">
+      </div>
+      <div class="col-md-offset-6 col-md-3">
+        <input type="submit" class="btn btn-success pull-right" value='Create'>
+        </input>
+      </div>
+      <div class="clearfix"></div>
+    </form>
+  </div>
+</div>  
 {% endblock %}
