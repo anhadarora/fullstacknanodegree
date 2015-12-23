@@ -39,7 +39,6 @@ class event(Base):
 	__tablename__ = 'events'
 
 	eventID = Column(Integer, primary_key = True)
-	# image = BLOB()
 	name = Column(String(80), nullable = False)
 	category = Column(String(250))
 	description = Column(String(250))
@@ -58,7 +57,7 @@ class event(Base):
 			'description': self.description,
 			'id': self.eventID,
 			'stars': self.stars,
-			'category': self.category,
+			'category': self.category
 		}
 	
 

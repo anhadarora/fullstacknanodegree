@@ -1,18 +1,21 @@
 {% extends "main.html" %}
 {% block content %}
-  <div class="panel panel-default">
-    <div class="pane-heading">
-      <h3 class="pane-title">
-        Events
-      </h3>
+
+<section id="one" class="wrapper special">
+  <div class="inner">
+      <h2>Events in <a href="{{url_for('domevents', domID=domain.domID)}}">{{domain.name}}</a> </h2>
       {% if logged_in %}
       <div class="media">
         <a href="{{url_for('newevent', domID=domain.domID)}}">
           <i class="glyphicon glyphicon-plus"></i>
           Add some stars!
         </a>
-      {% endif %} 
-    </div>
+      </div>
+      {% endif %}
+      </br>
+
+
+<div class="panel panel-default">
     {% for e in events %}
     <ul class="list-group">
       <li class="list-group-item">
@@ -20,12 +23,13 @@
           <div class="media-left">
             <img class="media-object" width="64" src="{{e.thumbnail_url}}" alt="icon">
           </div>
+          
           <div class="media-body media-middle">
-            <a class="btn btn-primary pull-right" href="{{url_for('domains')}}">
-              <i class="glyphicon glyphicon-star"></i>&nbsp;&nbsp;{{e.stars}}
+            <a class="button special icon fa-star pull-right" href="{{url_for('domains')}}">{{e.stars}}
             </a>
+
             <ul class="list-unstyled">
-              <li><strong class="media-heading"></strong><h2>{{e.name}}</h2></strong></li>
+              <li><h2>{{e.name}}</h2></strong></li>
 <!--               {% if events.featured %}
                 <li class="text-warning">
                   <i class="glyphicon glyphicon-star"></i>
@@ -63,4 +67,9 @@
       {% endfor %}
     </ul>
   </div>
+
+
+      
+</div>
+</div>
 {% endblock %}

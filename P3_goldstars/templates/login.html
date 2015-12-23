@@ -10,11 +10,11 @@
 	<!-- END PRE-REQS FOR GOOGLE SIGN IN -->
 
 </head>
+<section id="one" class="wrapper special">
+  <div class="inner">
 
 <!-- GOOGLE PLUS SIGN IN BUTTON-->
-<div class="container">
-  <div class="row">
-    <div class="col-md-3">
+<div class="feature" style='text-align: center'>
     	<div id="signinButton">
     	<span class="g-signin"
     		data-scope="openid email" 
@@ -26,10 +26,8 @@
     		data-approvalprompt="force">
     	</span>
     </div>
-  </div>
-</div>
 <div id="result"></div>
-
+</div>
 <script>
 function signInCallback(authResult) {
   if (authResult['code']) {
@@ -62,5 +60,6 @@ function signInCallback(authResult) {
 
 
 <!--END GOOGLE PLUS SIGN IN BUTTON -->
-
+</div>
+</section>
 {% endblock %}

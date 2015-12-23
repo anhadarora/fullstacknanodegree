@@ -1,19 +1,20 @@
 {% extends "main.html" %}
 {% block content %}
-<div class="container">
-  <div class="row">
-  <h3>Edit Domain&nbsp;&nbsp;</h3>
-  <form class="form well" enctype="multipart/form-data" method="post" action="/domains/new/">
-    <div class="form-group col-md-8">
+
+<section id="one" class="wrapper special">
+  <div class="inner">
+      <h3>Editing a Domain</h3>
+      <div class="features">
+      <div class="feature">
+      <form enctype="multipart/form-data" method="post" action="/domains/{{domain.domID}}/edit/">
+<!--         <div class="form-group col-md-8"> -->
       <label for="name">Rename</label>
-      <input class="form-control" name="name" type="text" placeholder="{{domain.name}}" autofocus required>
-    </div>
-    <div class="checkbox col-md-3">
-    </div>
-    <div class="col-md-offset-6 col-md-3">
-      <input type="submit" class="btn btn-success pull-right" value='Create'>
-      </input>
-    </div>
+      <input name="name" type="text" placeholder="{{domain.name}}" autofocus required>
+      <div class="3u$ 12u$(small)">
+        <ul class="actions vertical small">
+        <li><input type="submit"class="button special small fit"value='Edit'>
+        </input></li>
+      </div>
     <div class="clearfix"></div>
   </form>
 </div>

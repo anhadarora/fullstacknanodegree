@@ -1,40 +1,38 @@
 {% extends "main.html" %}
 {% block content %}
-<div class="container">
-  <div class="row">
-    <div class="col-md-3">
-	   <h3><a href="{{url_for('domevents', domID=domain.domID)}}">{{domain.name}}</a></h3>
-	  <form class="form well" id="event-form" name="event-form" role="form" method="POST" action="/domains/{{domain.domID}}/events/{{event.eventID}}/edit/">
-    <div class="form-group col-md-8">
+<section id="one" class="wrapper special">
+  <div class="inner">
+    <header class="major">
+      <h2>Editing {{event.name}} in <a href="{{url_for('domevents', domID=domain.domID)}}">{{domain.name}}</a></h2>
+
+      <div class="features">
+      <div class="feature">
+      <form enctype="multipart/form-data" method="post" action="/domains/{{domain.domID}}/events/{{event.eventID}}/edit/">
+
       <label for="name">Event</label>
-      <input class="form-control" name="name" type="text" placeholder="{{event.name}}" autofocus required>
-    </div>
-    <div class="form-group col-md-4">
+      <input name="name" type="text" placeholder="{{event.name}}" autofocus required>
+
       <label for="stars"># Stars</label>
-      <input class="form-control" name="stars" type="text" placeholder="{{event.stars}}" autofocus required>
-    </div>
-      <div class="form-group col-md-8">
-        <label for="event-thumbnail-url">Thumbnail URL</label>
-        <input class="form-control" name="thumbnail_url" type="text" placeholder="{{event.thumbnail_url}}">
-      </div>
-      <div class="form-group col-md-4">
+      <input name="stars" type="text" placeholder="{{event.stars}}" autofocus required>
+
       <label for="category">Category</label>
-        <input class="form-control" name="category" type="text" placeholder="TODO define categories">
+      <input name="category" type="text" placeholder="TODO define categories" autofocus required>
+
+
+      <label for="thumbnail-url">Thumbnail URL</label>
+      <input name="thumbnail-url" type="text" placeholder="{{event.thumbnail_URL}}" autofocus required>
+
+      <label for="description">Description</label>
+        <textarea name="description" rows="2" placeholder="{{event.description}}"></textarea>
+
+      <div class="3u$ 12u$(small)">
+        <ul class="actions vertical small">
+        <li><input type="submit" class="button special small fit" value='Edit'>
+        </input></li>
       </div>
-      <div class="form-group col-md-4">
-      </div>
-      <div class="form-group col-md-12">
-        <label for="description">Description</label>
-        <textarea class="form-control" name="description" rows="2" placeholder="{{event.description}}"></textarea>
-      </div>
-      <div class="checkbox col-md-3">
-      </div>
-      <div class="col-md-offset-6 col-md-3">
-        <input type="submit" class="btn btn-success pull-right" value='Create'>
-        </input>
-      </div>
-      <div class="clearfix"></div>
-    </form>
-  </div>
-</div>  
+    <div class="clearfix"></div>
+  </form>
+</div>
+</div>
+
 {% endblock %}

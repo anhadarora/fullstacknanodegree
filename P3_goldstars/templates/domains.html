@@ -1,63 +1,57 @@
 {% extends "main.html" %}
 {% block content %}
+  <section id="one" class="wrapper special">
+    <div class="inner">
 
-<!--  -->
-<!-- <div>
+        <h2>Domains</h2>
+              
+      <div class="features">
+		{% for d in domain %}
+        <div class="feature">
+		 <div class="media">
+          <i class="fa fa-diamond"></i>
+          <h3> <a href="{{url_for('domevents', domID=d.domID)}}">{{d.name}}</a></h3>
+         </div>
+          <div class="media">
+	    	<a href="{{url_for('domevents', domID=d.domID)}}">
+		      <i class="glyphicon glyphicon-star btn-lg"></i><p>See stars</p>
+		    </a>
+		  </div>
+			  {% if logged_in %}
+				<div class="media">
+		    	<a href="{{url_for('newevent', domID=d.domID)}}">
+		      	<i class="glyphicon glyphicon-plus"></i> Stars! </a>
+		  	</div>
+			    <div class="media">
+			    <a href="{{url_for('editDom', domID=d.domID)}}">
+			      <i class="glyphicon glyphicon-edit"></i>
+			      Edit
+			    </a>
+			  </div>
+			  <div class="media">
+			    <a href="{{url_for('deleteDom', domID=d.domID)}}">
+			      <i class="glyphicon glyphicon-minus"></i>
+			      Delete
+			    </a>
+			  </div>
+			</br>
+			  {% endif %}
+			</div>
+			{% endfor %}
+    	</div>
 
-{% for e in events%}
-{{e.name}}
-{% endfor %}
- -->
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-3">
-      <h3>Domains</h3>
-      <ul class="list-unstyled">
+   
         {% if logged_in %}
 		  <div class="media">
 		    <a href="{{url_for('newDom')}}">
 		      <i class="glyphicon glyphicon-plus"></i>
 		      New realm of life
 		    </a>
+		  </div>
   		{% endif %}	
-      {% for d in domain %}
-      <br>
-        <h2><li><a href="{{url_for('domevents', domID=d.domID)}}">{{d.name}}</a></li></h2>
+        
 
-	    <div class="media">
-	    	<a href="{{url_for('domevents', domID=d.domID)}}">
-		      <i class="glyphicon glyphicon-star"></i>&nbsp;&nbsp;
-		      See stars
-		    </a>
-		</div>
-
-	  {% if logged_in %}
-	    <div class="media">
-	    <a href="{{url_for('editDom', domID=d.domID)}}">
-	      <i class="glyphicon glyphicon-edit"></i>&nbsp;&nbsp;
-	      Edit Domain
-	    </a>
-	  </div>
-	  <div class="media">
-	    <a href="{{url_for('deleteDom', domID=d.domID)}}">
-	      <i class="glyphicon glyphicon-minus"></i>&nbsp;&nbsp;
-	      Delete Domain
-	    </a>
-	  </div>
-	  <div class="media">
-	    <a href="{{url_for('newevent', domID=d.domID)}}">
-	      <i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;
-	      Add some stars!
-	    </a>
-	  </div>
-	  {% endif %}
-      {% endfor %}
-      </ul>
-    </div> 
-   </div>
-</div>
-
-
+  </section>
 
 {% endblock %}

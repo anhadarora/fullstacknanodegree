@@ -1,4 +1,6 @@
 # TODO - create scoreboard, do editing templates
+# TODO - get    a:link  {color:white} a:hover {color:#f7df2a} into CSS)
+
 from flask import Flask, render_template, request, \
     redirect, url_for, flash, jsonify
 # import module for authorization/authentication
@@ -407,18 +409,19 @@ def newevent(domID):
     session.rollback()
     if request.method == 'POST':
         newevent = event(name=request.form['name'], stars=request.form['stars'],
-                       thumbnail_url=request.form['thumbnail_url'],
-                       description=request.form['description'],
-                       category=request.form['category'], domID=domID,
-                       userID=login_session['user_id'], 
-                       )
+                         thumbnail_url=request.form['thumbnail_url'],
+                         description=request.form['description'],
+                         category=request.form['category'], domID=domID
+                         # userID=login_session['user_id'],
+                         )
         session.add(newevent)
         session.commit()
         flash("New event created!")
         return redirect(url_for('domevents', domID=domID))
     else:
         dom = session.query(domain).filter_by(domID=domID).one()
-        return render_template('starsnew.html', domain=dom, domID=domID)
+        return render_template('starsnew.html', domain=dom, domID=domID, logged_in=True)
+
 
 @app.route('/domains/<int:domID>/events/<int:eventID>/edit/', methods=['GET', 'POST'])
 def editevent(domID, eventID):
@@ -439,7 +442,7 @@ def editevent(domID, eventID):
         session.commit()
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('starsedit.html', domain=dom, event=eventToEdit)
+        return render_template('starsedit.html', domain=dom, event=eventToEdit, logged_in=True)
 
 
 # Create a route for deleteMenuevent function here
@@ -457,7 +460,7 @@ def deleteevent(domID, eventID):
         return redirect(url_for('domevents', domID=domID))
     else:
         return render_template('starsdelete.html', domain=dom,
-                               event=eventToDelete)
+                               event=eventToDelete, logged_in=True)
 
 # helper routes
 @app.route('/source')
