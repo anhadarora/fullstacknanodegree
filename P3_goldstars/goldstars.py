@@ -1,10 +1,11 @@
-# TODO - create scoreboard, do editing templates
-# TODO - get    a:link  {color:white} a:hover {color:#f7df2a} into CSS)
+# TODO - create scoreboard
 
 from flask import Flask, render_template, request, \
-    redirect, url_for, flash, jsonify
+    redirect, url_for, flash, jsonify, make_response
 # import module for authorization/authentication
 from flask import session as login_session
+from flask.ext.seasurf import SeaSurf
+
 import random, string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -14,13 +15,12 @@ from database_setup import Base, domain, event, user
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
-# json module provides an API for converting in memory python objects
-# to a serialized representation (json)
+# provides API to convert in memory python objects to serialized repr (json)
 import json
+
 # xml module... DELETE CLEAN
 # from dict2xml import dict2xml
 # converts the return value from a function into an object to send to client
-from flask import make_response
 import requests
 
 CLIENT_ID = json.loads(
@@ -28,6 +28,7 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "healthitems-app"
 
 app = Flask(__name__)
+csrf = SeaSurf(app)
 
 engine = create_engine('sqlite:///goldstarswithusers.db')
 Base.metadata.bind = engine
@@ -38,6 +39,9 @@ session = DBSession()
 repo_uri = 'https://github.com/mleafer/fullstacknanodegree.git'
 base_uri = '/domains/'
 api_uri = base_uri + 'api/'
+
+
+#-----AUTHENTICATION---------------------------------------------
 
 # Create a random anti-forgery state token with each GET request
 @app.route('/login', methods=['GET', 'POST'])
@@ -141,29 +145,6 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
-
-
-# Create a new user by extracting all the necessary data from the login_session
-def createUser(login_session):
-    newUser = user(name=login_session['username'],
-                   email=login_session['email'],
-                   picture=login_session['picture'])
-    session.add(newUser)
-    session.commit()
-    newUser = session.query(user).filter_by(email=login_session['email']).one()
-    return newUser.userID
-
-
-def getUserInfo(userID):
-    return session.query(user).filter_by(userID=userID).one()
-
-
-def getUserID(email):
-    try:
-        getUser = session.query(user).filter_by(email=email).one()
-        return getUser.userID
-    except:
-        return None
 
 
 @app.route('/fbconnect', methods=['POST'])
@@ -291,6 +272,32 @@ def disconnect():
         return redirect(url_for('domains'))
 
 
+#-----USER OBJECTS---------------------------------------------
+# Create a new user by extracting all the necessary data from the login_session
+def createUser(login_session):
+    newUser = user(name=login_session['username'],
+                   email=login_session['email'],
+                   picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    newUser = session.query(user).filter_by(email=login_session['email']).one()
+    return newUser.userID
+
+
+def getUserInfo(userID):
+    return session.query(user).filter_by(userID=userID).one()
+
+
+def getUserID(email):
+    try:
+        getUser = session.query(user).filter_by(email=email).one()
+        return getUser.userID
+    except:
+        return None
+
+
+#-----API EXTENSIONS---------------------------------------------
+
 # JSON APIs to view domain and event Information
 @app.route('/domains.json')
 def domainsJSON():
@@ -328,6 +335,7 @@ def domainsXML():
 #     return response
 
 
+#-----DOMAIN OBJECTS---------------------------------------------
 
 # Show all domains
 @app.route('/domains/', methods=['GET', 'POST'])
@@ -386,6 +394,8 @@ def deleteDom(domID):
     else:
         return render_template('domainsdelete.html', domain=domToDelete)
 
+
+#-----EVENT OBJECTS---------------------------------------------
 # List all the events associated with a domain
 @app.route('/domains/<int:domID>/', methods=['GET', 'POST'])
 @app.route('/domains/<int:domID>/events/', methods=['GET', 'POST'])
@@ -405,20 +415,39 @@ def domevents(domID):
 @app.route('/domains/<int:domID>/new', methods=['GET', 'POST'])
 def newevent(domID):
     if 'username' not in login_session:
+        print "Username wasn't in the login session"
         return redirect('/login')
+
+    print "username was in login session"
+
     session.rollback()
+    print "rollback executed"
+
     if request.method == 'POST':
-        newevent = event(name=request.form['name'], stars=request.form['stars'],
+        print "the request was a post"
+        print "name:", request.form['name']
+        print "stars:", int(request.form['stars'])
+        print "thumbnail:", request.form['thumbnail_url']
+        print "description:", request.form['description']
+        print "category:", request.form['category']
+        print "domain:", domID
+        print "userid:", login_session['user_id']
+
+        newevent = event(name=request.form['name'], stars=int(request.form['stars']),
                          thumbnail_url=request.form['thumbnail_url'],
                          description=request.form['description'],
-                         category=request.form['category'], domID=domID
-                         # userID=login_session['user_id'],
+                         category=request.form['category'], domID=domID,
+                         userID=login_session['user_id']
                          )
+        print "newevent variable was formed"
         session.add(newevent)
+        print "new event added"
         session.commit()
+        print "session committed"
         flash("New event created!")
         return redirect(url_for('domevents', domID=domID))
     else:
+        print "this was a get request"
         dom = session.query(domain).filter_by(domID=domID).one()
         return render_template('starsnew.html', domain=dom, domID=domID, logged_in=True)
 
@@ -445,7 +474,7 @@ def editevent(domID, eventID):
         return render_template('starsedit.html', domain=dom, event=eventToEdit, logged_in=True)
 
 
-# Create a route for deleteMenuevent function here
+
 @app.route('/domains/<int:domID>/events/<int:eventID>/delete/',
             methods=['GET', 'POST'])
 def deleteevent(domID, eventID):
@@ -462,7 +491,9 @@ def deleteevent(domID, eventID):
         return render_template('starsdelete.html', domain=dom,
                                event=eventToDelete, logged_in=True)
 
-# helper routes
+
+#-----HELPER FUNCTIONS/ROUTES---------------------------------------------
+
 @app.route('/source')
 def source():
     """ redirects to github repository """
