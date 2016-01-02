@@ -4,6 +4,7 @@ Sessions can have speakers, start time, duration, type of session (workshop, lec
 location. You will need to define the Session class and the SessionForm class, as well as appropriate Endpoints.
 You are free to choose how you want to define speakers, eg just as a string or as a full fledged entity.
 
+# Task 1 - Added to models.py
 
 class Session(ndb.Model):
     """Session -- Session object"""
@@ -39,7 +40,7 @@ class SessionQueryForms(messages.Message):
     filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
 
 
-
+# Task 2
 
 class Wishlist(ndb.Model):
     userID = ndb.StringProperty(required=True)

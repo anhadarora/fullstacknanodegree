@@ -1,8 +1,6 @@
 # final app additions
 
-# Task 1:
-
-Add Endpoints methods
+# Task 1 - added to conference.py
 
 def _copySessionToForm(self, sesh, websafeConferenceKey): # TODO 1 is it suppose to take a websafekey arg?
     """Copy relevant fields from Session to SessionForm."""
@@ -54,7 +52,7 @@ def _createSessionObject(self, request):
 
     Session(**data).put()
 
-    # check to see if speaker exists in other sections, add to memcache if so
+    # Task 4 TODO: check to see if speaker exists in other sections, add to memcache if so
 
     #return session form
     return self._copySessionToForm(s_key.get())
@@ -125,8 +123,6 @@ def getConferenceSessionsByType(websafeConferenceKey, typeOfSession):
 
 
 
-
-
 @endpoints.method(SPEAKER_GET_REQUEST, SessionForms, path='sessions/{speaker}',
         http_method='GET', name='getSessionsBySpeaker')
 def getSessionsBySpeaker(speaker):
@@ -135,6 +131,11 @@ def getSessionsBySpeaker(speaker):
     return q.filter(Session.speaker == speaker)
 
     return SessionForms(items=[self._copySessionToForm(sesh, websafeConferenceKey)] for sesh in q)
+
+
+
+
+
 
 
 """
@@ -147,6 +148,15 @@ created sessions as a separate 'kind' object to store different entities with sp
 
 and sessions as a property of user profile
 """
+
+
+
+
+
+
+
+
+
 
 
 
@@ -237,13 +247,6 @@ def addSessionToWishlist(self, request):
 
 
 
-
-
-
-
-
-
-#should these be in the conference.py file?
 
 # Task 3: Work on indexes and queries
 
@@ -364,7 +367,8 @@ def getConferenceSessionsByType(websafeConferenceKey, typeOfSession):
 When a new session is added to a conference, check the speaker. 
 If there is more than one session by this speaker at this conference, 
 also add a new Memcache entry that features the speaker and session names. 
-You can choose the Memcache key. The logic should be handled using App Engine's Task Queue."""
+You can choose the Memcache key. The logic should be handled using App Engine's Task Queue.
+reqs: student uses app egines task queue when implem the featured speaker logic"""
 
 #in app.yaml
 # Task 4
@@ -395,12 +399,15 @@ API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 MEMCACHE_SESSIONS_KEY = "SPEAKER_SESSIONS"
 SESSIONS_TPL = 
 
-add to : def createSession(SessionForm, websafeConferenceKey):
+add to : 
 
-# check if speaker exists in other sessions; if so, add list of all sessions with associated speakerto memcache
+def createSession(SessionForm, websafeConferenceKey):
+
+# check if speaker exists in other sessions; if so, add list of all sessions with associated speaker to memcache
 	sessions = Session.query(Session.speaker == data['speaker'],
 	    ancestor=p_key) # TODO why ancestor=p_key??? all attributed to one conference? speaker[conference][session]??
-	if len(list(sessions)) > 1: #find a different expression?
+	if len(list(sessions)) > 1: 
+
 # add a new Memcache entry that features the speaker and session names
 		to_cache = {}
 		to_cache['speaker'] = data['speaker']
@@ -413,14 +420,153 @@ add to : def createSession(SessionForm, websafeConferenceKey):
     	taskqueue.add(params={'speaker': speaker.name(),
         'sessions': repr(request)}, # TODO add logic that iterates through the sessions
         url='/tasks/cache_sessions'
- 
         )
 
-def getFeaturedSpeaker():
+# <------------OR USE------------> (https://github.com/TomTheToad/FullStack_Udacity_P4/blob/master/conference.py)
+
+# Update featured speaker key in memcache
+# get current speaker
+    speaker = session.speakerDisplayName
+
+# get the number of sessions hosted by current speaker
+    number_sessions = self._getNumber of ConferenceSessionBySpeaker(speaker, request.websafeConferenceKey)
+
+    # if number of sessions greater than one set featured speaker
+    if number_sessions > 1:
+        taskqueue.add(
+            params={'speaker': speaker,
+                    'websafeConferenceKey': request.websafeConferenceKey' },
+                    url = '/tasks/set_featured_speaker')
+
+# <------------OR USE------------>  https://github.com/sshebel/fullstack_proj4/blob/master/conference.py
+
+        # if speaker is presenting 2 or more sessions
+        # add a task to check if this speaker is now a featured speaker
+        if count >= 2:             
+            taskqueue.add(params={'conference': c_key.urlsafe(),'speaker':data['speaker']},url='/tasks/featuredSpeaker')
+        #send email to creator
+        taskqueue.add(params={'email': user.email(),
+            'sessionInfo': repr(request)},
+            url='/tasks/send_confirmation_email'
+        )
 
 
-# git commits
+
+
+
+
+
+
+# allanbreyes
+
+def getFeaturedSpeaker(self, request):
+    """Returns the session for the featured speaker"""
+    # pull data out of memcache
+    data = memcache.get('featured_speaker')
+    from pprint import pprint
+    pprint(data)
+    sessions = []
+    sessionNames = []
+    speaker = None
+
+    if data and data.has_key('speaker') and data.has_key('sessionNames'):
+        speaker = data['speaker']
+        sessionNames = data['sessionNames']
+
+    # if memcache fails or is empty, pull speaker from upcoming session
+
+else:
+    upcoming_session = Session.query(Session.date >= datetime.now())\
+                            .order(Session.date, Session.startTime).get()
+    if upcoming_session:
+        speaker = upcoming_session.speakersessions = Session.query(Session.speaker ==speaker)
+        sessionNames = [session.name for session in sessions]
+# populate speaker form
+sf = SpeakerForm()
+for field in sf.all_fields():
+    if field.name == 'sessionNames':
+        setattr(sf, field,name, sessionNames)
+    elif field.name == 'speaker':
+        setattr(sf, field,name, speaker)
+sf.check_initialized()
+
+return sf
+
+
+
 # Add url handler cache_sessions to app.yaml
 # Add HTTP controller handler for memcache & task queue access in main.py
+
+
+# <------------OR USE------------> (https://github.com/TomTheToad/FullStack_Udacity_P4/blob/master/conference.py)
+
+def _setFeaturedSpeaker(self, featured_speaker, websafeConferenceKey):
+
+    #set Memcache key to featured speaker
+    MEMCACHE_SPEAKER_KEY = 'FEATURED SPEAKER'
+
+    # get session names associated with featured speaker
+    sessions = Session.query(
+        ancestor = (ndb.Key(urlsafe=websafeConferenceKey)))
+    sessions.filter(Session.speakerDisplayName == featured_speaker)
+
+    # Create message
+    memcache_msg = "Our Featured speaker is " + str(featured_speaker) + \
+                   ". sessions: "
+
+    for session in sessions:
+        memcache_msg += str(session.name) + ", "
+
+    # Set memcache key
+    memcache.set(memcache_speaker_key, memcache_msg)
+
+@endpoints.method(message_types.VoidMessage, StringMessage,
+                  path='conference/featured_speaker/get',
+                  http_method='GET',
+                  name='getFeaturedSpeaker')
+def getFeaturedSpeaker(self, request):
+    """Get featured speaker"""
+    memcache_speaker = memcache.get('FEATURED SPEAKER')
+
+    if memcache_speaker is not None:
+        return StringMessage(data=memcache_speaker)
+    else:
+        msg = "Check back for our upcoming featured speaker!"
+        return StringMessage(data=msg)
+
+
+
+# <------------OR USE------------>  https://github.com/sshebel/fullstack_proj4/blob/master/conference.py
+
+@staticmethod
+def _cacheFeaturedSpeaker(c_urlsafeKey,speaker_id):
+    """ Cache a featured speaker and associated sessions for a conference
+        Called from getFeaturedSpeaker and CreateFeaturedSpeaker(from the task queue)
+    """
+    logging.info("speaker id=%s"%speaker_id)
+    c_key = ndb.Key(urlsafe=c_urlsafeKey)
+    sessionlist = Session.query(ancestor=c_key).fetch()
+    memstring=""
+    featuredsessions=[]
+    for session in sessionlist:
+        if session.speaker == speaker_id:
+                featuredsessions.append(session.name)
+    memstring = 'Featured speaker,%s, will be leading the following sessions %s' % (
+        ndb.Key(Speaker,speaker_id).get().displayName,
+        ', '.join(featuredsessions))
+    if memstring:
+        memcache.set("featuredspeaker-%s"%c_urlsafeKey,memstring)
+    return(memstring)
+
+
+@endpoints.method(GET_REQUEST, StringMessage,
+        path='featuredSpeaker/{websafeKey}',
+        http_method='GET', name='getFeaturedSpeaker')
+def getFeaturedSpeaker(self, request):
+    """ Get the featured speaker info for the specified conference from memcache """
+    c_key = ndb.Key(urlsafe=request.websafeKey)
+    fspeaker = memcache.get("featuredspeaker-%s"%request.websafeKey)
+    return StringMessage(data=fspeaker)
+
 
 
