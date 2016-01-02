@@ -11,10 +11,8 @@ Leafer's Gold Stars is equal parts motivational and competitive scoreboard betwe
 
 ### Quick start
 
-* [Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip) .
-* Set up your [Vagrant Machine](https://www.vagrantup.com/), and [Virtual Box](https://www.virtualbox.org/).
-* Virtual Box
-* Clone the [Fullstack VM Repo](https://github.com/udacity/fullstack-nanodegree-vm) for config files. 
+* [Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip).
+* Ensure you have [Vagrant Machine](https://www.vagrantup.com/), and [Virtual Box](https://www.virtualbox.org/) installed.
 * Initialize the VM via `vagrant up`
 * Connect to the VM via `vagrant ssh`
 * (Optional) Obtain your own [Google](https://console.developers.google.com)/[Facebook](https://developers.facebook.com/) oAuth API keys.
