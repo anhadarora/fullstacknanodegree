@@ -3,9 +3,8 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship # creates foreign key relationships
 from sqlalchemy import create_engine 
+Base = declarative_base() # lets sqlalchemy know that our classes are  special sqlalchemy classes that correspond to tables in DB
 
-# establish classes as sqlalchemy classes corresponding to DB tables
-Base = declarative_base()
 
 # classes
 class user(Base):
@@ -17,36 +16,35 @@ class user(Base):
 	email = Column(String(80), nullable = False)
 	picture = Column(String(250))
 
-class domain(Base) :
+class company(Base) :
 	
-	__tablename__ = 'domain'
+	__tablename__ = 'company'
 
-	domID = Column(Integer, primary_key = True)
+	compID = Column(Integer, primary_key = True)
 	name = Column(String(80), nullable = False)
 	userID = Column(Integer, ForeignKey('user.userID'))
 	pullUser = relationship(user)
-	# starcounter = relationship(event) TODO
 	
 	@property
 	def serialize(self):
 		"""Return object data in easily serializable format"""
 		return {
 				'name': self.name,
-				'id': self.domID,
+				'id': self.compID,
 		}
 	
-class event(Base):
+class item(Base):
 
-	__tablename__ = 'events'
+	__tablename__ = 'items'
 
-	eventID = Column(Integer, primary_key = True)
+	itemID = Column(Integer, primary_key = True)
+	# image = BLOB()
 	name = Column(String(80), nullable = False)
 	category = Column(String(250))
 	description = Column(String(250))
-	thumbnail_url = Column(String(255))
-	stars = Column(Integer, nullable = False)
-	domID = Column(Integer, ForeignKey('domain.domID'))
-	dom = relationship(domain)
+	price = Column(String(8))
+	compID = Column(Integer, ForeignKey('company.compID'))
+	comp = relationship(company)
 	userID = Column(Integer, ForeignKey('user.userID'))
 	pullUser = relationship(user)
 
@@ -56,15 +54,16 @@ class event(Base):
 		return {
 			'name': self.name,
 			'description': self.description,
-			'id': self.eventID,
-			'stars': self.stars,
-			'category': self.category
+			'id': self.itemID,
+			'price': self.price,
+			'category': self.category,
 		}
 	
 
 
-# Configure and initialize sqlite engine
-engine = create_engine('sqlite:///goldstarswithusers.db')
 
-# goes into DB and adds classes as new tables to DB
-Base.metadata.create_all(engine) 
+#### configuration to insert at end of file ####
+
+engine = create_engine('sqlite:///healthitemswithusers.db')
+
+Base.metadata.create_all(engine) # goes into DB and adds classes as new tables to DB

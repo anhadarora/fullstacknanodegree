@@ -191,7 +191,8 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange\
+        _token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
         app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -239,7 +240,8 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 100px; height: 100px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 100px; height: 100px;border-radius:\
+     150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -305,9 +307,7 @@ def disconnect():
         return redirect(url_for('domains'))
 
 
-
-#-----API EXTENSIONS---------------------------------------------
-
+# -----API EXTENSIONS---------------------------------------------
 # JSON APIs to view domain and event Information
 @app.route('/domains.json')
 def domainsJSON():
@@ -324,7 +324,8 @@ def domeventsJSON(domID):
 
 @app.route('/domains/<int:domID>/events/<int:eventsID>.json')
 def eventJSON(domID, eventID):
-    domevent = session.query(event).filter_by(domID=domID, eventID=eventID).one()
+    domevent = session.query(event).filter_by(domID=domID,
+                                              eventID=eventID).one()
     return jsonify(event=domevent.serialize)
 
 
@@ -339,14 +340,13 @@ def domainsXML():
 # def domeventsXML(domID):
 #     dom = session.query(domain).filter_by(domID=domID).one()
 #     events = session.query(event).filter_by(domID=domID).all()
-#     domainsXML = dict2xml(jsonify(jsonify(events=[i.serialize for i in events]), wrap="domeventsXML")
+#     domainsXML = dict2xml(jsonify(jsonify(events=
+#     [i.serialize for i in events]), wrap="domeventsXML")
 #     response=make_response(xml)
 #     response.headers['Content-Type']='application/atom+xml'
 #     return response
 
-
-#-----DOMAIN OBJECTS---------------------------------------------
-
+# -----DOMAIN OBJECTS---------------------------------------------
 # Show all domains
 @app.route('/domains/', methods=['GET', 'POST'])
 def domains():
@@ -355,16 +355,17 @@ def domains():
 
     # TODO (scoreboard)
     use = session.query(user.name).all()
-    starcounts = session.query(event.userID, func.sum(event.stars).label('starcounts')).group_by(event.userID).all()
+    starcounts = session.query(event.userID, func.sum(event.stars).label
+                               ('starcounts')).group_by(event.userID).all()
     print "userIDs: ", use
     print "stars by user: ", starcounts
 
-
     if 'username' not in login_session:
-        return render_template('domains.html', domain=dom, starcounts=starcounts, users=use)
+        return render_template('domains.html', domain=dom,
+                               starcounts=starcounts, users=use)
     else:
-        return render_template('domains.html', domain=dom, logged_in=True, starcounts=starcounts, users=use)
-
+        return render_template('domains.html', domain=dom, logged_in=True,
+                               starcounts=starcounts, users=use)
 
 
 # CRUD functions for domains
@@ -374,14 +375,15 @@ def newDom():
         return redirect('/login')
     session.rollback()
     if request.method == 'POST':
-        newdom = domain(name=request.form['name'], userID=login_session['user_id'])
+        newdom = domain(name=request.form['name'],
+                        userID=login_session['user_id'])
         session.add(newdom)
         session.commit()
         flash("New domain created!")
         return redirect(url_for('domains'))
     else:
         return render_template('domainsnew.html', domain=domain)
-        
+
 
 @app.route('/domains/<int:domID>/edit/', methods=['GET', 'POST'])
 def editDom(domID):
@@ -414,11 +416,7 @@ def deleteDom(domID):
         return render_template('domainsdelete.html', domain=domToDelete)
 
 
-def starcounter(userID):
-    starcount = sessions.query(func.sum(event.stars).label('starcount')).filter_by(userID=userID)
-
-
-#-----EVENT OBJECTS---------------------------------------------
+# -----EVENT OBJECTS---------------------------------------------
 # List all the events associated with a domain
 @app.route('/domains/<int:domID>/', methods=['GET', 'POST'])
 @app.route('/domains/<int:domID>/events/', methods=['GET', 'POST'])
@@ -429,7 +427,8 @@ def domevents(domID):
     print "login username: ", login_session['username']
     print "creator ID: ", creator.userID
     print "login user ID: ", login_session['user_id']
-    if 'username' not in login_session or creator.userID != login_session['user_id']:
+    if 'username' not in login_session or creator.userID\
+            != login_session['user_id']:
         return render_template('stars.html', domain=dom, events=events,
                                creator=creator)
     else:
@@ -459,15 +458,17 @@ def newevent(domID):
         print "domain:", domID
         print "userid:", login_session['user_id']
 
-        if (request.form['thumbnail_url'] != "") :
-            newevent = event(name=request.form['name'], stars=int(request.form['stars']),
+        if (request.form['thumbnail_url'] != ""):
+            newevent = event(name=request.form['name'],
+                             stars=int(request.form['stars']),
                              thumbnail_url=request.form['thumbnail_url'],
                              description=request.form['description'],
                              category=request.form['category'], domID=domID,
                              userID=login_session['user_id']
                              )
         else:
-            newevent = event(name=request.form['name'], stars=int(request.form['stars']),
+            newevent = event(name=request.form['name'],
+                             stars=int(request.form['stars']),
                              thumbnail_url=login_session['picture'],
                              description=request.form['description'],
                              category=request.form['category'], domID=domID,
@@ -484,10 +485,12 @@ def newevent(domID):
     else:
         print "this was a get request"
         dom = session.query(domain).filter_by(domID=domID).one()
-        return render_template('starsnew.html', domain=dom, domID=domID, logged_in=True)
+        return render_template('starsnew.html', domain=dom, domID=domID,
+                               logged_in=True)
 
 
-@app.route('/domains/<int:domID>/events/<int:eventID>/edit/', methods=['GET', 'POST'])
+@app.route('/domains/<int:domID>/events/<int:eventID>/edit/',
+           methods=['GET', 'POST'])
 def editevent(domID, eventID):
     if 'username' not in login_session:
         return redirect('/login')
@@ -506,18 +509,18 @@ def editevent(domID, eventID):
         session.commit()
         return redirect(url_for('domevents', domID=domID))
     else:
-        return render_template('starsedit.html', domain=dom, event=eventToEdit, logged_in=True)
-
+        return render_template('starsedit.html', domain=dom, event=eventToEdit,
+                               logged_in=True)
 
 
 @app.route('/domains/<int:domID>/events/<int:eventID>/delete/',
-            methods=['GET', 'POST'])
+           methods=['GET', 'POST'])
 def deleteevent(domID, eventID):
     if 'username' not in login_session:
         return redirect('/login')
     dom = session.query(domain).filter_by(domID=domID).one()
     eventToDelete = session.query(event).filter_by(domID=domID,
-                                                 eventID=eventID).one()
+                                                   eventID=eventID).one()
     if request.method == 'POST':
         session.delete(eventToDelete)
         session.commit()
@@ -527,9 +530,7 @@ def deleteevent(domID, eventID):
                                event=eventToDelete, logged_in=True)
 
 
-
-#-----HELPER FUNCTIONS/ROUTES---------------------------------------------
-
+# -----HELPER FUNCTIONS/ROUTES---------------------------------------------
 @app.route('/source')
 def source():
     """ redirects to github repository """
