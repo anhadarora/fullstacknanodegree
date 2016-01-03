@@ -6,14 +6,17 @@ from flask import Flask, render_template, request, \
 from flask import session as login_session
 from flask.ext.seasurf import SeaSurf
 
-import random, string
+import random
+import string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 from database_setup import Base, domain, event, user
 # create a flow object from the client's secret JSON file,
 # which stores clientID, client secret, and oAuth parameters
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
+
 import httplib2
 # provides API to convert in memory python objects to serialized repr (json)
 import json
@@ -22,6 +25,7 @@ import json
 # from dict2xml import dict2xml
 # converts the return value from a function into an object to send to client
 import requests
+
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -41,18 +45,44 @@ base_uri = '/domains/'
 api_uri = base_uri + 'api/'
 
 
-#-----AUTHENTICATION---------------------------------------------
+# -----USER OBJECTS---------------------------------------------
+# Create a new user by extracting all the necessary data from the login_session
+def createUser(login_session):
+    newUser = user(name=login_session['username'],
+                   email=login_session['email'],
+                   picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    newUser = session.query(user).filter_by(email=login_session['email']).one()
+    return newUser.userID
+
+
+def getUserInfo(userID):
+    return session.query(user).filter_by(userID=userID).one()
+
+
+def getUserID(email):
+    try:
+        getUser = session.query(user).filter_by(email=email).one()
+        return getUser.userID
+    except:
+        return None
+
+
+# -----AUTHENTICATION---------------------------------------------
 
 # Create a random anti-forgery state token with each GET request
+@csrf.exempt
 @app.route('/login', methods=['GET', 'POST'])
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.
-        digits) for x in xrange(32))
+                    digits) for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
 
 # Log-in to the site with a server side function
+@csrf.exempt
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Confirm that token client sends to server = server sends to the client
@@ -147,6 +177,7 @@ def gconnect():
     return output
 
 
+@csrf.exempt
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
     if request.args.get('state') != login_session['state']:
@@ -160,10 +191,8 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token\
-           &client_id=%s&client_secret=%s&fb_exchange_token=%s'\
-            % (app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+        app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
@@ -175,7 +204,6 @@ def fbconnect():
     url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-
     # print "url sent for API access:%s"% url
     # print "API JSON result: %s" % result
     data = json.loads(result)
@@ -184,13 +212,14 @@ def fbconnect():
     login_session['email'] = data["email"]
     login_session['facebook_id'] = data["id"]
 
-    # Store the token in the login_session for proper logout
+    # The token must be stored in the login_session in order to properly logout
+    # let's strip out expiration information from token
     stored_token = token.split("=")[1]
     login_session['access_token'] = stored_token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect\
-           =0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.4/me/picture?%s&\
+           redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -204,18 +233,20 @@ def fbconnect():
     login_session['user_id'] = user_id
 
     output = ''
-    output += '<h2>Welcome, '
+    output += '<h1>Welcome, '
     output += login_session['username']
-    output += '!</h2>'
+
+    output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 100px; height: 100px;border-radius:\
-     150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 100px; height: 100px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+
     flash("Now logged in as %s" % login_session['username'])
     return output
 
 
 # DISCONNECT; revoke a current user's token and reset their login_session
+@csrf.exempt
 @app.route('/gdisconnect')
 def gdisconnect():
     # Only disconnect a connected user.
@@ -238,6 +269,7 @@ def gdisconnect():
         return response
 
 
+@csrf.exempt
 @app.route('/fbdisconnect')
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
@@ -250,6 +282,7 @@ def fbdisconnect():
     return "you have been logged out"
 
 
+@csrf.exempt
 @app.route('/disconnect')
 def disconnect():
     if 'provider' in login_session:
@@ -271,29 +304,6 @@ def disconnect():
         flash("You were not logged in")
         return redirect(url_for('domains'))
 
-
-#-----USER OBJECTS---------------------------------------------
-# Create a new user by extracting all the necessary data from the login_session
-def createUser(login_session):
-    newUser = user(name=login_session['username'],
-                   email=login_session['email'],
-                   picture=login_session['picture'])
-    session.add(newUser)
-    session.commit()
-    newUser = session.query(user).filter_by(email=login_session['email']).one()
-    return newUser.userID
-
-
-def getUserInfo(userID):
-    return session.query(user).filter_by(userID=userID).one()
-
-
-def getUserID(email):
-    try:
-        getUser = session.query(user).filter_by(email=email).one()
-        return getUser.userID
-    except:
-        return None
 
 
 #-----API EXTENSIONS---------------------------------------------
@@ -342,10 +352,19 @@ def domainsXML():
 def domains():
     session.rollback()
     dom = session.query(domain).all()
+
+    # TODO (scoreboard)
+    use = session.query(user.name).all()
+    starcounts = session.query(event.userID, func.sum(event.stars).label('starcounts')).group_by(event.userID).all()
+    print "userIDs: ", use
+    print "stars by user: ", starcounts
+
+
     if 'username' not in login_session:
-        return render_template('domains.html', domain=dom)
+        return render_template('domains.html', domain=dom, starcounts=starcounts, users=use)
     else:
-        return render_template('domains.html', domain=dom, logged_in=True)
+        return render_template('domains.html', domain=dom, logged_in=True, starcounts=starcounts, users=use)
+
 
 
 # CRUD functions for domains
@@ -395,6 +414,10 @@ def deleteDom(domID):
         return render_template('domainsdelete.html', domain=domToDelete)
 
 
+def starcounter(userID):
+    starcount = sessions.query(func.sum(event.stars).label('starcount')).filter_by(userID=userID)
+
+
 #-----EVENT OBJECTS---------------------------------------------
 # List all the events associated with a domain
 @app.route('/domains/<int:domID>/', methods=['GET', 'POST'])
@@ -403,6 +426,9 @@ def domevents(domID):
     dom = session.query(domain).filter_by(domID=domID).one()
     events = session.query(event).filter_by(domID=domID).all()
     creator = getUserInfo(dom.userID)
+    print "login username: ", login_session['username']
+    print "creator ID: ", creator.userID
+    print "login user ID: ", login_session['user_id']
     if 'username' not in login_session or creator.userID != login_session['user_id']:
         return render_template('stars.html', domain=dom, events=events,
                                creator=creator)
@@ -433,12 +459,21 @@ def newevent(domID):
         print "domain:", domID
         print "userid:", login_session['user_id']
 
-        newevent = event(name=request.form['name'], stars=int(request.form['stars']),
-                         thumbnail_url=request.form['thumbnail_url'],
-                         description=request.form['description'],
-                         category=request.form['category'], domID=domID,
-                         userID=login_session['user_id']
-                         )
+        if (request.form['thumbnail_url'] != "") :
+            newevent = event(name=request.form['name'], stars=int(request.form['stars']),
+                             thumbnail_url=request.form['thumbnail_url'],
+                             description=request.form['description'],
+                             category=request.form['category'], domID=domID,
+                             userID=login_session['user_id']
+                             )
+        else:
+            newevent = event(name=request.form['name'], stars=int(request.form['stars']),
+                             thumbnail_url=login_session['picture'],
+                             description=request.form['description'],
+                             category=request.form['category'], domID=domID,
+                             userID=login_session['user_id']
+                             )
+
         print "newevent variable was formed"
         session.add(newevent)
         print "new event added"
@@ -490,6 +525,7 @@ def deleteevent(domID, eventID):
     else:
         return render_template('starsdelete.html', domain=dom,
                                event=eventToDelete, logged_in=True)
+
 
 
 #-----HELPER FUNCTIONS/ROUTES---------------------------------------------

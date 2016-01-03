@@ -3,8 +3,9 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship # creates foreign key relationships
 from sqlalchemy import create_engine 
-Base = declarative_base() # lets sqlalchemy know that our classes are  special sqlalchemy classes that correspond to tables in DB
 
+# establish classes as sqlalchemy classes corresponding to DB tables
+Base = declarative_base()
 
 # classes
 class user(Base):
@@ -62,8 +63,8 @@ class event(Base):
 	
 
 
-#### configuration to insert at end of file ####
-
+# Configure and initialize sqlite engine
 engine = create_engine('sqlite:///goldstarswithusers.db')
 
-Base.metadata.create_all(engine) # goes into DB and adds classes as new tables to DB
+# goes into DB and adds classes as new tables to DB
+Base.metadata.create_all(engine) 
