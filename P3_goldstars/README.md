@@ -42,7 +42,7 @@ Leafer's Gold Stars is equal parts motivational and competitive scoreboard betwe
 * Local Permission Systems
 
 ### API Endpoints
-To access JSON endpoints use the access to JSON Endpoints
+To access JSON endpoints use the routes below.
 
 **Route to '/domains.json'**
 
