@@ -23,6 +23,7 @@
                class="btn btn-default">Whoa, I don't want to delete!</a>
             <input type="submit" class="btn btn-danger"
                    value="Get rid of it!"></input>
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
           </form>
         </div>
       </li>

@@ -1,6 +1,6 @@
 # Leafer's Linux
 
-Leafer's Linux {insert functions} Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree. 
+Leafer's Linux takes a baseline installation of a Linux distribution on a virtual machine and prepares it to host web applications, to include installing updates, secures it from a number of attack vectors and installs/configures web and database servers. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree. 
 
 
 ### Table of contents

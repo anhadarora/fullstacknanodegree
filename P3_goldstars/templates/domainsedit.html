@@ -7,7 +7,8 @@
       <div class="features">
       <div class="feature">
       <form enctype="multipart/form-data" method="post" action="/domains/{{domain.domID}}/edit/">
-<!--         <div class="form-group col-md-8"> -->
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      
       <label for="name">Rename</label>
       <input name="name" type="text" placeholder="{{domain.name}}" autofocus required>
       <div class="3u$ 12u$(small)">

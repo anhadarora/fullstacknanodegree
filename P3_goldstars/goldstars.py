@@ -21,8 +21,6 @@ import httplib2
 # provides API to convert in memory python objects to serialized repr (json)
 import json
 
-# xml module... DELETE CLEAN
-# from dict2xml import dict2xml
 # converts the return value from a function into an object to send to client
 import requests
 
@@ -329,25 +327,10 @@ def eventJSON(domID, eventID):
     return jsonify(event=domevent.serialize)
 
 
-# # ATOM APIs to view domain and event Information
-@app.route('/domains/xml', methods=['GET', 'POST'])
-def domainsXML():
-    domains = session.query(domain).all()
-    return render_template('domains.xml', domains=domains)
-
-
-# @app.route('/domains/<int:domID>/events.xml')
-# def domeventsXML(domID):
-#     dom = session.query(domain).filter_by(domID=domID).one()
-#     events = session.query(event).filter_by(domID=domID).all()
-#     domainsXML = dict2xml(jsonify(jsonify(events=
-#     [i.serialize for i in events]), wrap="domeventsXML")
-#     response=make_response(xml)
-#     response.headers['Content-Type']='application/atom+xml'
-#     return response
-
 # -----DOMAIN OBJECTS---------------------------------------------
 # Show all domains
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/domains', methods=['GET', 'POST'])
 @app.route('/domains/', methods=['GET', 'POST'])
 def domains():
     session.rollback()
@@ -449,15 +432,6 @@ def newevent(domID):
     print "rollback executed"
 
     if request.method == 'POST':
-        print "the request was a post"
-        print "name:", request.form['name']
-        print "stars:", int(request.form['stars'])
-        print "thumbnail:", request.form['thumbnail_url']
-        print "description:", request.form['description']
-        print "category:", request.form['category']
-        print "domain:", domID
-        print "userid:", login_session['user_id']
-
         if (request.form['thumbnail_url'] != ""):
             newevent = event(name=request.form['name'],
                              stars=int(request.form['stars']),

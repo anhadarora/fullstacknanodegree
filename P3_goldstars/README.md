@@ -5,9 +5,10 @@ Leafer's Gold Stars is equal parts motivational and competitive scoreboard betwe
 
 ### Table of contents
 
-* [Quick start](#quick-start)
+* [Quick Start](#quick-start)
 * [Creator](#creator)
 * [Concepts](#concepts)
+* [API Endpoints](#API Endpoints)
 
 ### Quick start
 
@@ -39,3 +40,21 @@ Leafer's Gold Stars is equal parts motivational and competitive scoreboard betwe
 * API Endpoints + JSON Messages
 * Styling with CSS + * Message Flashing
 * Local Permission Systems
+
+### API Endpoints
+* access to JSON Endpoints  
+`def domainsJSON()`
+Returns a list of all domain names and their ID numbers.
+
+`def domeventsJSON(domID)`
+Within specified domain, returns a list of all event names and their description, ID number, number of stars, and category.
+
+Arguments:
+* domID - ID number of domain
+
+`def eventJSON(domID, eventID)`
+Returns
+
+Arguments:
+* domID - ID number of domain
+* eventID - ID number of event

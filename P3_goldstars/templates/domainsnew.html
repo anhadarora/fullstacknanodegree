@@ -7,7 +7,8 @@
       <div class="features">
       <div class="feature">
         <form enctype="multipart/form-data" method="post" action="/domains/new/">
-<!--         <div class="form-group col-md-8"> -->
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        
         <label for="name">Domain Name</label>
         <input name="name" type="text" placeholder="Life, Work, the 5th dimension?" autofocus required>
         <div class="3u$ 12u$(small)">
