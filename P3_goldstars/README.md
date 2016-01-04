@@ -42,19 +42,31 @@ Leafer's Gold Stars is equal parts motivational and competitive scoreboard betwe
 * Local Permission Systems
 
 ### API Endpoints
-* access to JSON Endpoints  
+To access JSON endpoints use the access to JSON Endpoints
+
+**Route to '/domains.json'**
+
 `def domainsJSON()`
+
 Returns a list of all domain names and their ID numbers.
+
+Arguments:
+- None taken
+
+**Route to '/domains/<int:domID>/events.json'**
 
 `def domeventsJSON(domID)`
 Within specified domain, returns a list of all event names and their description, ID number, number of stars, and category.
 
 Arguments:
-* domID - ID number of domain
+- domID : ID number of domain
+
+**Route to '/domains/<int:domID>/events/<int:eventsID>.json'**
 
 `def eventJSON(domID, eventID)`
-Returns
+
+Returns the name, description, ID number, number of stars, and category of a specific event.
 
 Arguments:
-* domID - ID number of domain
-* eventID - ID number of event
+- domID : ID number of domain
+- eventID : ID number of event
