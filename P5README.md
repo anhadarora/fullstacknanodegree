@@ -17,17 +17,15 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 
 Server Details
 
-Server IP address: 52.35.208.141
+Server IP address: <!-- 52.27.62.61 -->
 
 SSH port: 2200
 
-Application URL: http://52.35.208.141 ```
-http://ec2-52.35.208.141.us-west-2.compute.amazonaws.com/ 
+Application URL: <!-- http://52.27.62.61 --> `````
 
 ### Installation Summary
 * A summary of software you installed and configuration changes made. Hint: refer to the .bash_history files on the server!
 
-ssh -i ~/.ssh/udacity_key.rsa root@52.33.182.173
 
 ### Creator
 
@@ -43,12 +41,12 @@ ssh -i ~/.ssh/udacity_key.rsa root@52.33.182.173
 ### Resources
 A list of any third-party resources you made use of to complete this project.
 http://askubuntu.com/questions/15433/unable-to-lock-the-administration-directory-var-lib-dpkg-is-another-process
-5
 
-[VIM editor cheatsheet](http://www.fprintf.net/vimCheatSheet.html)
-https://help.ubuntu.com/community/Sudoers
 
-http://stackoverflow.com/questions/6142437/make-git-directory-web-inaccessible
+
+
+
+
 
 
 
@@ -128,33 +126,37 @@ Configure the Uncomplicated Firewall (UFW)
 
 Block all incoming requests
 
-sudo ufw default deny incoming: 
+sudo ufw default deny incoming
+Allow all outgoing requests
 
-Allow all outgoing requests: `sudo ufw default allow outgoing`
+sudo ufw default allow outgoing
+Allowing incoming connections for SSH (port 2200)
 
-Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`
+sudo ufw allow 2200/tcp
+Allowing incoming connections for HTTP (port 80)
 
-Allow incoming connections for HTTP (port 80): `sudo ufw allow www`
+sudo ufw allow www
+Allowing incoming connections for NTP (port 123)
 
-Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`
+sudo ufw allow ntp
+Enable ufw
 
-Enable ufw: `sudo ufw enable`
-
+sudo ufw enable
 Configure the local timezone to UTC
 
-Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`
+Reconfiguring the tzdata package
 
+sudo dpkg-reconfigure tzdata
 # select `None of the above` then `UTC`
-
 Install and configure Apache to serve a Python mod_wsgi application
 
 Install required packages
 
-`sudo apt-get install apache2`
-`sudo apt-get install libapache2-mod-wsgi`
+sudo apt-get install apache2
+sudo apt-get install libapache2-mod-wsgi
+Install and configure PostgreSQL
 
-Install and configure PostgreSQL: `sudo apt-get install postgresql`
-
+sudo apt-get install postgresql
 Create a new user named catalog that has limited permissions to your catalog application database
 
 Change to postgres user
@@ -208,11 +210,9 @@ logging.basicConfig(stream=sys.stderr)
 sys.path.insert(0,"/var/www/catalog/catalog")
 
 from catalog import app as application
+Update last line of /etc/apache2/sites-enabled/000-default.conf to handle requests using the WSGI module, add the following line right before the closing line:
 
-Update last line of `/etc/apache2/sites-enabled/000-default.conf` to handle requests using the WSGI module, add the following line right before the closing line:
-
-`WSGIScriptAlias / /var/www/catalog/catalog/myapp.wsgi`
-
+WSGIScriptAlias / /var/www/catalog/catalog/myapp.wsgi
 Update Database connection string in database_setup to the following:
 
 postgresql://catalog:password@localhost/catalog
