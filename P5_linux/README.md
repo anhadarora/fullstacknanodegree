@@ -17,17 +17,19 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 
 Server Details
 
-Server IP address: 52.35.208.141
+Server IP address: 52.34.215.3
 
 SSH port: 2200
 
-Application URL: http://52.35.208.141 ```
-http://ec2-52.35.208.141.us-west-2.compute.amazonaws.com/ 
+Application URL: http://52.34.215.3 ```
+http://ec2-52.34.215.3.us-west-2.compute.amazonaws.com/ 
+
+Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
 
 ### Installation Summary
 * A summary of software you installed and configuration changes made. Hint: refer to the .bash_history files on the server!
 
-ssh -i ~/.ssh/udacity_key.rsa root@52.33.182.173
+ssh -i ~/.ssh/udacity_key.rsa root@52.34.215.3
 
 ### Creator
 
@@ -48,8 +50,9 @@ http://askubuntu.com/questions/15433/unable-to-lock-the-administration-directory
 [VIM editor cheatsheet](http://www.fprintf.net/vimCheatSheet.html)
 https://help.ubuntu.com/community/Sudoers
 
-http://stackoverflow.com/questions/6142437/make-git-directory-web-inaccessible
+[Digital Ocean Tutorial Deploying Flask on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 
+http://flask.pocoo.org/docs/0.10/deploying/mod_wsgi/#configuring-apache
 
 
 Software Installed
@@ -80,7 +83,7 @@ sudo apt-get install unattended-upgrades
 sudo dpkg-reconfigure -plow unattended-upgrades
 Create a new user named grader
 
-adduser grader
+sudo adduser grader
 Give the user grader permission to sudo
 
 echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader
@@ -95,31 +98,35 @@ Configure public key on server. As the grader user paste .pub file contents in t
 # RUN ON SERVER
 su grader
 mkdir ~/.ssh
-vim ~/.ssh/authorized_keys
+touch ~/.ssh/authorized_keys
+
 Set correct permissions
 
-chmod 700 ~/.ssh
-chmod 644 ~/.ssh/authorized_keys
-Change the SSH port from 22 to 2200
+`chmod 700 ~/.ssh
+chmod 644 ~/.ssh/authorized_keys`
+
+**Change the SSH port from 22 to 2200**
 
 Open SSH config file
 
-vim /etc/ssh/sshd_config
+`nano /etc/ssh/sshd_config`
+
 Change Port 22 to Port 2200
 
 Remote login of the root user has been disabled
 
 Open SSH config file
 
-vim /etc/ssh/sshd_config
-Ensure PermitRootLogin has a value no`
+`nano /etc/ssh/sshd_config`
+
+Ensure PermitRootLogin has a value `no`
 
 Enforce SSH Authentication (i.e prevent password login)
 
 Open SSH config file
 
-vim /etc/ssh/sshd_config
-Ensure PasswordAuthentication has a value no`
+`sudo nano /etc/ssh/sshd_config`
+Ensure PasswordAuthentication has a value `no`
 
 Restart SSH service
 
