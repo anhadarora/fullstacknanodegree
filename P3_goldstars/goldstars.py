@@ -320,7 +320,7 @@ def domeventsJSON(domID):
     return jsonify(events=[i.serialize for i in events])
 
 
-@app.route('/domains/<int:domID>/events/<int:eventsID>.json')
+@app.route('/domains/<int:domID>/events/<int:eventID>.json')
 def eventJSON(domID, eventID):
     domevent = session.query(event).filter_by(domID=domID,
                                               eventID=eventID).one()
