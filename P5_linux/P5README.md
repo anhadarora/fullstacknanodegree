@@ -162,7 +162,7 @@ Create a new user named catalog that has limited permissions to your catalog app
 Change to postgres user
 
 sudo -i -u postgres
-Create new dastbase user catalog
+Create new database user catalog
 
 postgres@server:~$ createuser --interactive -P
 Enter name of role to add: catalog
@@ -176,6 +176,10 @@ Create catalog Database
 postgres:~$ psql
 CREATE DATABASE catalog;
 \q
+
+
+sudo --user=postgres psql -c "GRANT ALL ON DATABASE catalog TO catalog"
+
 logout of postgres user
 
 exit
@@ -221,3 +225,9 @@ Ensure oauth tokens are correct
 Restart Apache
 
 sudo service apache2 restart
+
+Reconfigure oauth permissions
+
+change my clients_secrets.json file and "authorized redirect URIs" in Google developers console
+
+`"redirect_uris":["http://ec2-52-34-14-120-us-west-2.compute.amazonaws.com/oauth2callback"]`

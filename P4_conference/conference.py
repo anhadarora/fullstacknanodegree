@@ -78,6 +78,7 @@ FIELDS =    {
             'MAX_ATTENDEES': 'maxAttendees',
             }
 
+# ResourceContainers for request classes
 CONF_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
@@ -88,8 +89,13 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     websafeConferenceKey=messages.StringField(1),
 )
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+WISH_POST_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeSessionKey=messages.StringField(1, required=True),
+)
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+3
 
 @endpoints.api(name='conference', version='v1', audiences=[ANDROID_AUDIENCE],
     allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID, ANDROID_CLIENT_ID, IOS_CLIENT_ID],

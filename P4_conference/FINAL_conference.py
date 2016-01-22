@@ -1,5 +1,21 @@
 # final app additions
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash("You are not allowed to access there")
+                return redirect(url_for('login', next=request.url))
+    return decorated_function
+
+# and one line above each function where users need to be logged in, place this code:
+@login_required
+def XXXfunction(args):
+    XXXcode
+# ref : flask.pocoo.org/docs/0.10/patterns/viewdecorators/
+
 # Task 1 - added to conference.py
 
 def _copySessionToForm(self, sesh, websafeConferenceKey): # TODO 1 is it suppose to take a websafekey arg?
@@ -140,7 +156,8 @@ def getSessionsBySpeaker(speaker):
 
 """
 Explain in a couple of paragraphs your design choices for session and speaker implementation.
-didn't create speaker as separate object, kept as a property (or create user as new attendee/user 
+
+The speaker was not created as separate object, kept as a property (or create user as new attendee/user 
 bc helps with headcount and ensures all people in central store. 
 (e.g. if you need comprehensive user list for administrative purposes)
 
@@ -152,74 +169,19 @@ and sessions as a property of user profile
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-"""# Task 2: Add Sessions to User Wishlist
-
+"""# Task 2: Add Sessions to User Wishlist 
 
 Users should be able to mark some sessions that they are interested in 
 and retrieve their own current wishlist. You are free to design the way this wishlist is stored.
-thought about putting as a user profile property, but not good bc of DB design rules, what if not all of them have a wishlist
-one wishlist per conference"""
+
+chose to store as user profile property and to add sessions for conference not registered for. 
+this could allow for targeting marketing for prospective conf attendees.ctive conference attendees."""
 
 
 
-def _createWishlistObject(self):
-    user = self._getProfileFromUser()
-    if not user:
-        raise endpoints.UnauthorizedException('Authorization required')
-    p_key = user.key
+# pretty much done need to test 
 
-    wish_list = Wishlist(parent=p_key)
-    wish_list.userID = user.mainEmail
-
-    wish_list.put()
-
-def _getSessionsInWishlist(self):
- """queries for all the sessions in a conference that the user is interested in"""
-
-    user = self._getProfileFromUser()
-    if not user:
-        raise endpoints.UnauthorizedException('Authorization required')
-    p_key = user.key
-    wish_list = Wishlist.query(ancestor=user.key).get() # put .get() after p_key = user.key instead?
-
-    return SessionForms(
-        items=[self._copySessionToForm(sesh, websafeConferenceKey)
-            for sesh in wish_list])
-
-# -OR-
-
-#     forms = SessionForms()
-
-#     for key in wishlist.sessionKeys:
-#         query = Session.query(Session.key == key).get()
-#         forms.items += [self._copySessionToForm(session=query)]
-
-#     return forms
-
-
-
-@endpoints.method(message_types.VoidMessage, SessionForms,
-                  path='conference/session/wishlist/get',
-                  http_method='GET',
-                  name='getSessionsInWishlist')
-def getSessionsInWishlist(self, request):
-    """Get Session from current user wishlist"""
-    return self._getSessionsInWishlist()
-
-
-@endpoints.method(WishlistForm, StringMessage,
+@endpoints.method(WISHLIST_POST_REQUEST, StringMessage,
                   path='conference/{websafekey}/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
                   http_method='POST',
                   name='addSessionToWishlist')
@@ -232,18 +194,42 @@ def addSessionToWishlist(self, request):
     p_key = user.key
 
     confKey = request.websafeKey
-    SessionKey = request.websafeSessionKey
+    sessKey = request.websafeSessionKey
 
     # query by user key as the ancestor
-    wish_list = Wishlist.query(ancestor=user.key).get() # do i need to have .get() at the end here?
+    prof = p_key.get()
 
-    if wish_list and wish_list.s_keys:
-        wish_list.s_keys.append(SessionKey) #where is this session key coming from?
+    if prof and prof.sessKeyWishlist:
+        prof.sessKeyWishlist.append(sessKey)
     else:
-        self._createWishlistObject(user)
-        wish_list.c_key = [confKey]
-        wish_list.s_keys = [SessionKey]
-    wish_list.put()
+        raise endpoints.NotFoundException('Registration required')
+    prof.put()
+
+
+
+# done...need to test and understand forms
+
+@endpoints.method(message_types.VoidMessage, SessionForms,
+                  path='conference/session/wishlist/get',
+                  http_method='GET',
+                  name='getSessionsFromWishlist')
+def getSessionsFromWishlist(self, request):
+    """Get Sessions from current user wishlist"""
+    # preload necessary data items
+    user = endpoints.get_current_user()
+    if not user:
+        raise endpoints.UnauthorizedException('Authorization required')
+
+    # get profile and wishlist
+    prof = self._getProfileFromUser()
+    sessKeys = user.sessKeyWishlist
+    wishlist = [sessKey.get() for sessKey in sessKeys]
+
+    # return the wishlist
+    return SessionForms(
+        items=[self._copySessionToForm(sessKey) for sessKey in wishlist]
+
+
 
 
 
@@ -422,6 +408,8 @@ def createSession(SessionForm, websafeConferenceKey):
         url='/tasks/cache_sessions'
         )
 
+
+
 # <------------OR USE------------> (https://github.com/TomTheToad/FullStack_Udacity_P4/blob/master/conference.py)
 
 # Update featured speaker key in memcache
@@ -481,6 +469,7 @@ else:
     if upcoming_session:
         speaker = upcoming_session.speakersessions = Session.query(Session.speaker ==speaker)
         sessionNames = [session.name for session in sessions]
+        
 # populate speaker form
 sf = SpeakerForm()
 for field in sf.all_fields():
@@ -494,8 +483,19 @@ return sf
 
 
 
+
 # Add url handler cache_sessions to app.yaml
 # Add HTTP controller handler for memcache & task queue access in main.py
+
+
+
+
+
+
+
+
+
+
 
 
 # <------------OR USE------------> (https://github.com/TomTheToad/FullStack_Udacity_P4/blob/master/conference.py)

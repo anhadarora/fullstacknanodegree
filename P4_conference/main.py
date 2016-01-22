@@ -39,9 +39,15 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
 
 class CacheSessionsHandler(webapp2.RequestHandler):
     def post(self):
-        """Sends sessions by one speaker at a single conference to the memcache"""
+        """Set featured speaker in the Memcache nds sessions by one speaker at a single conference to the memcache"""
         ConferenceApi.cacheSessions()
         # self.
+
+        confAPI = ConferenceAPI()
+        featured_speaker = self.request.get('speaker')
+        websafeConferenceKey = self.request.get('websafeConferenceKey')
+        ConferenceAPI._setFeaturedSpeaker(featured_speaker, websafeConferenceKey)
+
          # TODO task 4
 
 

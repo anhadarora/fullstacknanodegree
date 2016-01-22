@@ -17,13 +17,14 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 
 Server Details
 
-Server IP address: 52.34.215.3
+Server IP address: 52-34-14-120
 
 SSH port: 2200
 
-Application URL: http://52.34.215.3 ```
-http://ec2-52.34.215.3.us-west-2.compute.amazonaws.com/ 
+Application URL: http://52.34.14.120 ```
+http://ec2-52-34-14-120-us-west-2.compute.amazonaws.com/ 
 
+If private key installed:
 Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
 
 ### Installation Summary
@@ -215,6 +216,12 @@ logging.basicConfig(stream=sys.stderr)
 sys.path.insert(0,"/var/www/catalog/catalog")
 
 from catalog import app as application
+
+Configure and Enable New Virtual Host
+
+
+`sudo nano /etc/apache2/sites-available/FlaskApp.conf`
+
 
 Update last line of `/etc/apache2/sites-enabled/000-default.conf` to handle requests using the WSGI module, add the following line right before the closing line:
 

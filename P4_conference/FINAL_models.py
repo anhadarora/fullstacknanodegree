@@ -40,20 +40,15 @@ class SessionQueryForms(messages.Message):
     filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
 
 
-# Task 2
+# Task 2 - add to class Profile - ADDED
+    sessKeyWishlist = ndb.StringProperty(repeated=True)
 
-class Wishlist(ndb.Model):
-    userID = ndb.StringProperty(required=True)
-    c_key  = ndb.KeyProperty(kind='Conference', required=True)
-    s_keys = ndb.KeyProperty(kind='Session', repeated=True)
-
-class WishlistForm(messages.Message):
-    userID = messages.StringField(1)
-    websafeSessionKey = messages.StringField(2)
-    websafeKey = messages.StringField(3)
+class SessionForms(messages.Message):
+    """SessionForms -- multiple Session outbound form message"""
+    items = messages.MessageField(SessionForm, 1, repeated=True)
 
 
-
+# Task 4
 class ProfileFeedForm(messages.Message):
     """ProfileFeedForm -- Profile Feed outbound form message"""
     displayName = messages.StringField(1)
