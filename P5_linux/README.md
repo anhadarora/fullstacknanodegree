@@ -21,8 +21,8 @@ Server IP address: 52-34-14-120
 
 SSH port: 2200
 
-Application URL: http://52.34.14.120 ```
-http://ec2-52-34-14-120-us-west-2.compute.amazonaws.com/ 
+Application URL:
+```http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/ ```
 
 If private key installed:
 Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
@@ -39,7 +39,7 @@ ssh -i ~/.ssh/udacity_key.rsa root@52.34.215.3
 * <https://twitter.com/mleafer>
 * <https://github.com/mleafer>
 
-### Concepts 
+### Concepts
 
 
 
@@ -167,36 +167,42 @@ Create a new user named catalog that has limited permissions to your catalog app
 
 Change to postgres user
 
-sudo -i -u postgres
+`sudo -i -u postgres`
+
 Create new dastbase user catalog
 
-postgres@server:~$ createuser --interactive -P
+```postgres@server:~$ createuser --interactive -P
 Enter name of role to add: catalog
 Enter password for new role:
 Enter it again:
 Shall the new role be a superuser? (y/n) n
 Shall the new role be allowed to create databases? (y/n) n
 Shall the new role be allowed to create more new roles? (y/n) n
+```
+
 Create catalog Database
 
-postgres:~$ psql
+```postgres:~$ psql
 CREATE DATABASE catalog;
 \q
+```
 logout of postgres user
 
-exit
+`exit`
+
 Install git, clone and setup Catalog App project
 
-Install git
+`Install git`
 
 sudo apt-get install git
 clone repo
 
 Protect .git directory
 
-sudo chmod 700 /var/www/catalog/catalog/.git
-Install application dependences
+`sudo chmod 700 /var/www/catalog/catalog/.git`
 
+Install application dependences
+```
 sudo apt-get -qqy install python-psycopg2
 sudo apt-get -qqy install python-flask
 sudo apt-get -qqy install python-sqlalchemy
@@ -207,25 +213,27 @@ sudo pip install github-flask
 sudo pip install httplib2
 sudo pip install oauth2client
 sudo pip install requests
+```
 Create a wsgi file entry point to work with mod_wsgi
-
+```
 #!/usr/bin/python
 import sys
 import logging
 logging.basicConfig(stream=sys.stderr)
-sys.path.insert(0,"/var/www/catalog/catalog")
+sys.path.insert(0,"/var/www/P3_goldstars/")
 
-from catalog import app as application
+from P3_goldstars import app as application
+application.secret_key = 'super_secret_key'```
 
 Configure and Enable New Virtual Host
 
 
-`sudo nano /etc/apache2/sites-available/FlaskApp.conf`
+`sudo nano /etc/apache2/sites-available/P3_goldstars.conf`
 
 
-Update last line of `/etc/apache2/sites-enabled/000-default.conf` to handle requests using the WSGI module, add the following line right before the closing line:
+Update last line of `/etc/apache2/sites-enabled/P3_goldstars.conf` to handle requests using the WSGI module, add the following line right before the closing line:
 
-`WSGIScriptAlias / /var/www/catalog/catalog/myapp.wsgi`
+`WSGIScriptAlias / /var/www/P3_goldstars/P3_goldstars/myapp.wsgi`
 
 Update Database connection string in database_setup to the following:
 
@@ -235,3 +243,9 @@ Ensure oauth tokens are correct
 Restart Apache
 
 sudo service apache2 restart
+
+Reconfigure oauth permissions
+
+change my clients_secrets.json file and "authorized redirect URIs" in Google developers console
+
+`"redirect_uris":["http://ec2-52-34-14-120-us.west-2.compute.amazonaws.com/oauth2callback"]`
