@@ -3,7 +3,7 @@
 Leafer's Linux takes a baseline installation of a Linux distribution on a virtual machine and prepares it to host web applications, to include installing updates, secures it from a number of attack vectors and installs/configures web and database servers. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree.
 
 
-### Table of contents
+## Table of contents
 
 [Access](#access)
 [Installation Summary](#installation-summary)
@@ -11,7 +11,7 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 [Concepts](#concepts)
 [Resources](#resources)
 
-### Access
+## Access
 
 * [Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip).
 
@@ -25,51 +25,51 @@ Application URL: http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/
 
 If private key installed: Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
 
-### Installation Summary
+## Installation Summary
 A summary of software installed and configuration changes made. Refer to the .bash_history files on the server!
 ssh -i ~/.ssh/udacity_key.rsa root@52.34.215.3
 
-__Software Installed__
+###Software Installed
 
-Apache2
-PostgreSQL
-bleach
-flask-seasurf
-git
-github-flask
-httplib2
-libapache2-mod-wsgi
-oauth2client
-python-flask
-python-pip
-python-psycopg2
-python-sqlalchemy
-requests
+Apache2  
+PostgreSQL  
+bleach  
+flask-seasurf  
+git  
+github-flask  
+httplib2  
+libapache2-mod-wsgi  
+oauth2client  
+python-flask  
+python-pip  
+python-psycopg2  
+python-sqlalchemy  
+requests  
 
-__Configuration__
+###Configuration
 
-Update all currently installed packages
+__Update all currently installed packages__
 `sudo apt-get update`
 `sudo apt-get upgrade -y`
 
-Configure Automatic Security Updates
+__Configure Automatic Security Updates__
 `sudo apt-get install unattended-upgrades`
 `sudo dpkg-reconfigure -plow unattended-upgrades`
 
-Create a new user named grader
+__Create a new user named grader__
 `sudo adduser grader`
 
-Give the user grader permission to sudo
+__Give the user grader permission to sudo__
 `echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader`
 
-Set up SSH Authentication
+__Set up SSH Authentication__
 Generate SSH key pairs, then copy the contents of the generated .pub file to the clipboard
 
-Run on Local Machine
+__Run on Local Machine__
 `ssh-keygen -t rsa -b 2048 -C "Just some comment"`
 Configure public key on server. As the grader user paste .pub file contents in to .ssh/authorized_key file
 
-Run on server
+__Run on server__
 `su grader`
 `mkdir ~/.ssh`
 `touch ~/.ssh/authorized_keys`
@@ -82,8 +82,6 @@ Set correct permissions
 
 Open SSH config file
 `nano /etc/ssh/sshd_config`
-
-Change Port 22 to Port 2200
 
 Remote login of the root user has been disabled
 
@@ -103,8 +101,7 @@ Ensure PasswordAuthentication has a value `no`
 Restart SSH service
 `sudo service ssh restart`
 
-Configure the Uncomplicated Firewall (UFW)
-
+__Configure the Uncomplicated Firewall (UFW)__
 Block all incoming requests: `sudo ufw default deny incoming`  
 Allow all outgoing requests: `sudo ufw default allow outgoing`  
 Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`  
@@ -113,16 +110,14 @@ Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`
 Enable ufw: `sudo ufw enable`  and answer `y` at the prompt
 Reboot: `sudo reboot`
 
-Configure the local timezone to UTC
+__Configure the local timezone to UTC__
 
 Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`
-
 # select `None of the above` then `UTC`
 
+__Install required packages__
+
 Install and configure Apache to serve a Python mod_wsgi application
-
-Install required packages
-
 `sudo apt-get install apache2`
 `sudo apt-get install libapache2-mod-wsgi`
 
@@ -134,7 +129,7 @@ Change to postgres user
 
 `sudo -i -u postgres`
 
-Create new dastbase user catalog
+Create new database user __catalog__
 
 ```postgres@server:~$ createuser --interactive -P
 Enter name of role to add: catalog
@@ -151,20 +146,16 @@ Create catalog Database
 CREATE DATABASE catalog;
 \q
 ```
-logout of postgres user
+logout of postgres user: `exit`
 
-`exit`
-
-Install git, clone and setup Catalog App project
-
-`Install git`
+Install git, clone and setup Catalog App project: `Install git`
 
 sudo apt-get install git
 clone repo
 
 Protect .git directory
 
-`sudo chmod 700 /var/www/catalog/catalog/.git`
+`sudo chmod 700 /var/www/P3_goldstars/P3_goldstars/.git`
 
 Install application dependences
 ```
