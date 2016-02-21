@@ -32,7 +32,10 @@ APPLICATION_NAME = "healthitems-app"
 app = Flask(__name__)
 csrf = SeaSurf(app)
 
-engine = create_engine('sqlite:///goldstarswithusers.db')
+# for P3
+# engine = create_engine('sqlite:///goldstarswithusers.db')
+# for P5
+engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)

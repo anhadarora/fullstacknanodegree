@@ -113,7 +113,7 @@ Reboot: `sudo reboot`
 __Configure the local timezone to UTC__
 
 Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`
-# select `None of the above` then `UTC`
+select `None of the above` then `UTC`
 
 __Install required packages__
 
