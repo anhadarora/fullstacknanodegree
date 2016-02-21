@@ -1,6 +1,6 @@
 # Leafer's Linux
 
-Leafer's Linux takes a baseline installation of a Linux distribution on a virtual machine and prepares it to host web applications, to include installing updates, secures it from a number of attack vectors and installs/configures web and database servers. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree. 
+Leafer's Linux takes a baseline installation of a Linux distribution on a virtual machine and prepares it to host web applications, to include installing updates, secures it from a number of attack vectors and installs/configures web and database servers. Created by [Marie Leaf](https://twitter.com/mleafer), for Project 5 of Udacity's Fullstack Nanodegree.
 
 
 ### Table of contents
@@ -15,48 +15,21 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 
 * [Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip).
 
-Server Details
+__Server Details__
 
 Server IP address: 52-34-14-120
 
 SSH port: 2200
 
-Application URL:
-```http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/ ```
+Application URL: http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/ 
 
-If private key installed:
-Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
+If private key installed: Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
 
 ### Installation Summary
-* A summary of software you installed and configuration changes made. Hint: refer to the .bash_history files on the server!
-
+A summary of software installed and configuration changes made. Refer to the .bash_history files on the server!
 ssh -i ~/.ssh/udacity_key.rsa root@52.34.215.3
 
-### Creator
-
-**Marie Leaf**
-
-* <https://twitter.com/mleafer>
-* <https://github.com/mleafer>
-
-### Concepts
-
-
-
-### Resources
-A list of any third-party resources you made use of to complete this project.
-http://askubuntu.com/questions/15433/unable-to-lock-the-administration-directory-var-lib-dpkg-is-another-process
-5
-
-[VIM editor cheatsheet](http://www.fprintf.net/vimCheatSheet.html)
-https://help.ubuntu.com/community/Sudoers
-
-[Digital Ocean Tutorial Deploying Flask on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
-
-http://flask.pocoo.org/docs/0.10/deploying/mod_wsgi/#configuring-apache
-
-
-Software Installed
+__Software Installed__
 
 Apache2
 PostgreSQL
@@ -72,44 +45,42 @@ python-pip
 python-psycopg2
 python-sqlalchemy
 requests
-Configuration
+
+__Configuration__
 
 Update all currently installed packages
+`sudo apt-get update`
+`sudo apt-get upgrade -y`
 
-sudo apt-get update
-sudo apt-get upgrade -y
 Configure Automatic Security Updates
+`sudo apt-get install unattended-upgrades`
+`sudo dpkg-reconfigure -plow unattended-upgrades`
 
-sudo apt-get install unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
 Create a new user named grader
+`sudo adduser grader`
 
-sudo adduser grader
 Give the user grader permission to sudo
+`echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader`
 
-echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader
 Set up SSH Authentication
-
 Generate SSH key pairs, then copy the contents of the generated .pub file to the clipboard
 
-# RUN ON LOCAL MACHINE
-ssh-keygen -t rsa -b 2048 -C "Just some comment"
+Run on Local Machine
+`ssh-keygen -t rsa -b 2048 -C "Just some comment"`
 Configure public key on server. As the grader user paste .pub file contents in to .ssh/authorized_key file
 
-# RUN ON SERVER
-su grader
-mkdir ~/.ssh
-touch ~/.ssh/authorized_keys
+Run on server
+`su grader`
+`mkdir ~/.ssh`
+`touch ~/.ssh/authorized_keys`
 
 Set correct permissions
-
-`chmod 700 ~/.ssh
-chmod 644 ~/.ssh/authorized_keys`
+`chmod 700 ~/.ssh`
+`chmod 644 ~/.ssh/authorized_keys`
 
 **Change the SSH port from 22 to 2200**
 
 Open SSH config file
-
 `nano /etc/ssh/sshd_config`
 
 Change Port 22 to Port 2200
@@ -130,23 +101,17 @@ Open SSH config file
 Ensure PasswordAuthentication has a value `no`
 
 Restart SSH service
+`sudo service ssh restart`
 
-sudo service ssh restart
 Configure the Uncomplicated Firewall (UFW)
 
-Block all incoming requests
-
-sudo ufw default deny incoming: 
-
-Allow all outgoing requests: `sudo ufw default allow outgoing`
-
-Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`
-
-Allow incoming connections for HTTP (port 80): `sudo ufw allow www`
-
-Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`
-
-Enable ufw: `sudo ufw enable`
+Block all incoming requests: `sudo ufw default deny incoming`  
+Allow all outgoing requests: `sudo ufw default allow outgoing`  
+Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`  
+Allow incoming connections for HTTP (port 80): `sudo ufw allow www`  
+Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`  
+Enable ufw: `sudo ufw enable`  and answer `y` at the prompt
+Reboot: `sudo reboot`
 
 Configure the local timezone to UTC
 
@@ -238,14 +203,36 @@ Update last line of `/etc/apache2/sites-enabled/P3_goldstars.conf` to handle req
 Update Database connection string in database_setup to the following:
 
 postgresql://catalog:password@localhost/catalog
-Ensure oauth tokens are correct
+__Ensure oauth tokens are correct
 
 Restart Apache
 
 sudo service apache2 restart
 
-Reconfigure oauth permissions
+__Reconfigure oauth permissions__
 
 change my clients_secrets.json file and "authorized redirect URIs" in Google developers console
 
-`"redirect_uris":["http://ec2-52-34-14-120-us.west-2.compute.amazonaws.com/oauth2callback"]`
+`"redirect_uris":["http://ec2-52-34-14-120.us.west-2.compute.amazonaws.com/oauth2callback"]`
+### Creator
+
+**Marie Leaf**
+
+* <https://twitter.com/mleafer>
+* <https://github.com/mleafer>
+
+### Concepts
+
+
+
+### Resources
+A list of any third-party resources you made use of to complete this project.
+http://askubuntu.com/questions/15433/unable-to-lock-the-administration-directory-var-lib-dpkg-is-another-process
+5
+
+[VIM editor cheatsheet](http://www.fprintf.net/vimCheatSheet.html)
+https://help.ubuntu.com/community/Sudoers
+
+[Digital Ocean Tutorial Deploying Flask on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+
+http://flask.pocoo.org/docs/0.10/deploying/mod_wsgi/#configuring-apache
