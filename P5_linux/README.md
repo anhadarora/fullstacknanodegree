@@ -129,7 +129,7 @@ Change to postgres user
 
 `sudo -i -u postgres`
 
-Create new database user __catalog__
+Create new database user __catalog__  
 
 ```postgres@server:~$ createuser --interactive -P
 Enter name of role to add: catalog
@@ -140,24 +140,25 @@ Shall the new role be allowed to create databases? (y/n) n
 Shall the new role be allowed to create more new roles? (y/n) n
 ```
 
-Create catalog Database
+Create catalog Database  
 
 ```postgres:~$ psql
 CREATE DATABASE catalog;
 \q
 ```
+
 logout of postgres user: `exit`
 
 Install git, clone and setup Catalog App project: `Install git`
 
-sudo apt-get install git
-clone repo
+``sudo apt-get install git``
 
-Protect .git directory
+Clone Goldstars repo and protect .git directory
+`sudo git clone https://github.com/mleafer/fullstacknanodegree/tree/master/P3_goldstars`
 
-`sudo chmod 700 /var/www/P3_goldstars/P3_goldstars/.git`
+`sudo chmod 700 /var/www/P3_goldstars/.git`
 
-Install application dependences
+Install application dependences  
 ```
 sudo apt-get -qqy install python-psycopg2
 sudo apt-get -qqy install python-flask
@@ -170,7 +171,8 @@ sudo pip install httplib2
 sudo pip install oauth2client
 sudo pip install requests
 ```
-Create a wsgi file entry point to work with mod_wsgi
+
+Create a wsgi file entry point to work with mod_wsgi  
 ```
 #!/usr/bin/python
 import sys
@@ -179,22 +181,18 @@ logging.basicConfig(stream=sys.stderr)
 sys.path.insert(0,"/var/www/P3_goldstars/")
 
 from P3_goldstars import app as application
-application.secret_key = 'super_secret_key'```
+application.secret_key = 'super_secret_key'
+```
 
-Configure and Enable New Virtual Host
-
+__Configure and Enable New Virtual Host__
 
 `sudo nano /etc/apache2/sites-available/P3_goldstars.conf`
 
-
-Update last line of `/etc/apache2/sites-enabled/P3_goldstars.conf` to handle requests using the WSGI module, add the following line right before the closing line:
-
+Update last line of `/etc/apache2/sites-enabled/P3_goldstars.conf` to handle requests using the WSGI module, add the following line right before the closing line:  
 `WSGIScriptAlias / /var/www/P3_goldstars/P3_goldstars/myapp.wsgi`
 
-Update Database connection string in database_setup to the following:
-
-postgresql://catalog:password@localhost/catalog
-__Ensure oauth tokens are correct
+Update Database connection string in database_setup.py, and \__init__.py to the following:
+`postgresql://catalog:password@localhost/catalog`
 
 Restart Apache
 
