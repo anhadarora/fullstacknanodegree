@@ -97,8 +97,9 @@ WISH_POST_REQUEST = endpoints.ResourceContainer(
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # when up and running add ANDROID_CLIENT_ID and IOS_CLIENT_ID to allowed client IDs
+# and add audiences=[ANDROID_AUDIENCE], to @endpoints.api()
 
-@endpoints.api(name='conference', version='v1', audiences=[ANDROID_AUDIENCE],
+@endpoints.api(name='conference', version='v1', 
     allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
     scopes=[EMAIL_SCOPE])
 class ConferenceApi(remote.Service):
