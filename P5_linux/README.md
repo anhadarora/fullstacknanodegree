@@ -77,55 +77,29 @@ __Give the user grader permission to sudo__
 `echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader`
 
 
-__Set up SSH Authentication__
+__Set up SSH Authentication__  
+Generate SSH key pairs, then copy the contents of the generated .pub file to the clipboard  
+__Run on Local Machine__  
+`ssh-keygen -t rsa -b 2048 -C "Just some comment"`  
+Configure public key on server. As the grader user paste .pub file contents in to .ssh/authorized_key file  
+__Run on server__  
+`su grader`  
+`mkdir ~/.ssh`  
+`touch ~/.ssh/authorized_keys`  
+__Set correct permissions__  
+`chmod 700 ~/.ssh`  
+`chmod 644 ~/.ssh/authorized_keys`  
+__Change the SSH port from 22 to 2200__  
+Open SSH config file and change `Port 22` to `Port 2200`  
+`nano /etc/ssh/sshd_config`  
+__Disable remote login of root user__  
+In SSH config file, ensure `PermitRootLogin` has a value `no`  
+__Enforce SSH Authentication (i.e prevent password login)__  
+In SSH config file, ensure `PasswordAuthentication` has a value `no`  
+Restart SSH service  
+`sudo service ssh restart`  
 
-Generate SSH key pairs, then copy the contents of the generated .pub file to the clipboard
-
-
-__Run on Local Machine__
-
-`ssh-keygen -t rsa -b 2048 -C "Just some comment"`
-
-Configure public key on server. As the grader user paste .pub file contents in to .ssh/authorized_key file
-
-
-__Run on server__
-
-`su grader`
-
-`mkdir ~/.ssh`
-
-`touch ~/.ssh/authorized_keys`
-
-
-__Set correct permissions__
-
-`chmod 700 ~/.ssh`
-
-`chmod 644 ~/.ssh/authorized_keys`
-
-
-__Change the SSH port from 22 to 2200__
-
-Open SSH config file and change `Port 22` to `Port 2200`
-
-`nano /etc/ssh/sshd_config`
-
-__Disable remote login of root user__
-
-In SSH config file, ensure `PermitRootLogin` has a value `no`
-
-__Enforce SSH Authentication (i.e prevent password login)__
-
-In SSH config file, ensure `PasswordAuthentication` has a value `no`
-
-Restart SSH service
-
-`sudo service ssh restart`
-
-
-__Configure the Uncomplicated Firewall (UFW)__
-
+__Configure the Uncomplicated Firewall (UFW)__  
 Block all incoming requests: `sudo ufw default deny incoming`  
 Allow all outgoing requests: `sudo ufw default allow outgoing`  
 Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`  
@@ -148,6 +122,7 @@ Install and configure Apache to serve a Python mod_wsgi application
 ```sudo apt-get install apache2
 sudo apt-get install libapache2-mod-wsgi
 ```
+
 
 Install and configure PostgreSQL: `sudo apt-get install postgresql`  
 Check if no remote connections are allowed: `sudo vim /etc/postgresql/9.3/main/pg_hba.conf`  
