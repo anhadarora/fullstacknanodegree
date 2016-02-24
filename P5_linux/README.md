@@ -86,6 +86,7 @@ __Run on server__
 `su grader`  
 `mkdir ~/.ssh`  
 `touch ~/.ssh/authorized_keys`  
+
 __Set correct permissions__  
 `chmod 700 ~/.ssh`  
 `chmod 644 ~/.ssh/authorized_keys`  
@@ -105,32 +106,28 @@ Allow all outgoing requests: `sudo ufw default allow outgoing`
 Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`  
 Allow incoming connections for HTTP (port 80): `sudo ufw allow www`  
 Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`  
-Enable ufw: `sudo ufw enable`  and answer `y` at the prompt
-Reboot: `sudo reboot`
+Enable ufw: `sudo ufw enable`  and answer `y` at the prompt  
+Reboot: `sudo reboot`  
 
 
-__Configure the local timezone to UTC__
-
-Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`
-
-select `None of the above` then `UTC`
+__Configure the local timezone to UTC__  
+Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`  
+select `None of the above` then `UTC`  
 
 __Install required packages__
+Install and configure Apache to serve a Python mod_wsgi application:  
+`sudo apt-get install apache2`  
+`sudo apt-get install libapache2-mod-wsgi`  
 
-Install and configure Apache to serve a Python mod_wsgi application
+__Install and configure PostgreSQL:__  
+`sudo apt-get install postgresql`  
+Check if no remote connections are allowed:  
+`sudo nano /etc/postgresql/9.3/main/pg_hba.conf`  
 
-```sudo apt-get install apache2
-sudo apt-get install libapache2-mod-wsgi
-```
-
-
-Install and configure PostgreSQL: `sudo apt-get install postgresql`  
-Check if no remote connections are allowed: `sudo vim /etc/postgresql/9.3/main/pg_hba.conf`  
-
-__Create a new user named `catalog` __
-With limited permissions to your catalog application database
-
-Change to postgres user: `sudo -i -u postgres`
+__Create a new user named `catalog`__  
+With limited permissions to your catalog application database  
+Change to postgres user and create new database user `catalog`:  
+`sudo -i -u postgres`  
 
 ```postgres@server:~$ createuser --interactive -P
 Enter name of role to add: catalog
@@ -141,7 +138,7 @@ Shall the new role be allowed to create databases? (y/n) n
 Shall the new role be allowed to create more new roles? (y/n) n
 ```
 
-Create catalog Database  
+Create `catalog` database  
 
 ```postgres:~$ psql
 CREATE DATABASE catalog;
@@ -150,11 +147,10 @@ CREATE DATABASE catalog;
 
 logout of postgres user: `exit`
 
-Install git, clone and setup Catalog App project: `Install git`
+Install git, clone and setup Catalog App project: `Install git`  
+`sudo apt-get install git`  
 
-``sudo apt-get install git``
-
-Clone Goldstars repo and protect .git directory
+Clone Goldstars repo and protect .git directory  
 `sudo git clone https://github.com/mleafer/fullstacknanodegree/tree/master/P3_goldstars`  
 `sudo chmod 700 /var/www/P3_goldstars/.git`
 
@@ -191,26 +187,24 @@ __Configure and Enable New Virtual Host__
 Update last line of `/etc/apache2/sites-enabled/P3_goldstars.conf` to handle requests using the WSGI module, add the following line right before the closing line:  
 `WSGIScriptAlias / /var/www/P3_goldstars/P3_goldstars/myapp.wsgi`
 
-Update Database connection string in database_setup.py, and \__init__.py to the following:
+Update Database connection string in database_setup.py, and \__init__.py to the following:  
 `postgresql://catalog:password@localhost/catalog`
 
 Turn off debug mode in \__init.py__ before deploying app - Debug mode in a production environment is a [major security risk](http://flask.pocoo.org/docs/0.10/quickstart/#debug-mode)
 
-Restart Apache
-
-`sudo service apache2 restart`
+Restart Apache  
+`sudo service apache2 restart`  
 
 __Reconfigure oauth permissions__
 
 change path in \__init__.py to correctly read client_secrets.json
 `CLIENT_ID = json.loads(open('/var/www/P3_goldstars/P3_goldstars/client_secrets.json','r').read())['web']['client_id']`
 
-use os.chdir(dir)? 
+use os.chdir(dir)?  
 
 to see apache log: `sudo tail /var/log/apache2/error.log`
 
-change my clients_secrets.json file and "authorized redirect URIs" in Google developers console
-
+change my clients_secrets.json file and "authorized redirect URIs" in Google developers console  
 `"redirect_uris":["http://ec2-52-34-14-120.us.west-2.compute.amazonaws.com/oauth2callback"]`
 
 Change Facebook oAuth settings to list `http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/` as site URL
