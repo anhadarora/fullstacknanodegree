@@ -6,10 +6,15 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 ## Table of contents
 
 [Access](#access)
+
 [Installation Summary](#installation-summary)
+
 [Creator](#creator)
+
 [Concepts](#concepts)
+
 [Resources](#resources)
+
 
 ## Access
 
@@ -23,10 +28,10 @@ SSH port: 2200
 
 Application URL: http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/ 
 
-If private key installed: Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
+With private key installed: Connect ssh grader@52.34.14.120 -p 2200 -i ~/.ssh/id_rsa
 
 ## Installation Summary
-A summary of software installed and configuration changes made. Refer to the .bash_history files on the server!
+A summary of software installed and configuration changes made. Refer to the .bash_history files on the server.
 ssh -i ~/.ssh/udacity_key.rsa root@52.34.215.3
 
 ###Software Installed
@@ -49,59 +54,78 @@ requests
 ###Configuration
 
 __Update all currently installed packages__
+
 `sudo apt-get update`
+
 `sudo apt-get upgrade -y`
 
+
 __Configure Automatic Security Updates__
+
 `sudo apt-get install unattended-upgrades`
+
 `sudo dpkg-reconfigure -plow unattended-upgrades`
 
+
 __Create a new user named grader__
+
 `sudo adduser grader`
 
+
 __Give the user grader permission to sudo__
+
 `echo "grader ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/grader`
 
+
 __Set up SSH Authentication__
+
 Generate SSH key pairs, then copy the contents of the generated .pub file to the clipboard
 
+
 __Run on Local Machine__
+
 `ssh-keygen -t rsa -b 2048 -C "Just some comment"`
+
 Configure public key on server. As the grader user paste .pub file contents in to .ssh/authorized_key file
 
+
 __Run on server__
+
 `su grader`
+
 `mkdir ~/.ssh`
+
 `touch ~/.ssh/authorized_keys`
 
-Set correct permissions
+
+__Set correct permissions__
+
 `chmod 700 ~/.ssh`
+
 `chmod 644 ~/.ssh/authorized_keys`
 
-**Change the SSH port from 22 to 2200**
 
-Open SSH config file
-`nano /etc/ssh/sshd_config`
+__Change the SSH port from 22 to 2200__
 
-Remote login of the root user has been disabled
-
-Open SSH config file
+Open SSH config file and change `Port 22` to `Port 2200`
 
 `nano /etc/ssh/sshd_config`
 
-Ensure PermitRootLogin has a value `no`
+__Disable remote login of root user__
 
-Enforce SSH Authentication (i.e prevent password login)
+In SSH config file, ensure `PermitRootLogin` has a value `no`
 
-Open SSH config file
+__Enforce SSH Authentication (i.e prevent password login)__
 
-`sudo nano /etc/ssh/sshd_config`
-Ensure PasswordAuthentication has a value `no`
+In SSH config file, ensure `PasswordAuthentication` has a value `no`
 
 Restart SSH service
+
 `sudo service ssh restart`
 
+
 __Configure the Uncomplicated Firewall (UFW)__
+
 Block all incoming requests: `sudo ufw default deny incoming`  
 Allow all outgoing requests: `sudo ufw default allow outgoing`  
 Allow incoming connections for SSH (port 2200): `sudo ufw allow 2200/tcp`  
@@ -110,16 +134,20 @@ Allow incoming connections for NTP (port 123): `sudo ufw allow ntp`
 Enable ufw: `sudo ufw enable`  and answer `y` at the prompt
 Reboot: `sudo reboot`
 
+
 __Configure the local timezone to UTC__
 
 Reconfiguring the tzdata package: `sudo dpkg-reconfigure tzdata`
+
 select `None of the above` then `UTC`
 
 __Install required packages__
 
 Install and configure Apache to serve a Python mod_wsgi application
-`sudo apt-get install apache2`
-`sudo apt-get install libapache2-mod-wsgi`
+
+```sudo apt-get install apache2
+sudo apt-get install libapache2-mod-wsgi
+```
 
 Install and configure PostgreSQL: `sudo apt-get install postgresql`  
 Check if no remote connections are allowed: `sudo vim /etc/postgresql/9.3/main/pg_hba.conf`  
