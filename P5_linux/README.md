@@ -18,7 +18,7 @@ Leafer's Linux takes a baseline installation of a Linux distribution on a virtua
 
 ## Access
 
-* [Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip).
+[Download the latest release](https://github.com/mleafer/fullstacknanodegree/archive/master.zip).
 
 __Server Details__
 
@@ -200,12 +200,10 @@ __Reconfigure oauth permissions__
 change path in \__init__.py to correctly read client_secrets.json
 `CLIENT_ID = json.loads(open('/var/www/P3_goldstars/P3_goldstars/client_secrets.json','r').read())['web']['client_id']`
 
-use os.chdir(dir)?  
-
 to see apache log: `sudo tail /var/log/apache2/error.log`
 
-change my clients_secrets.json file and "authorized redirect URIs" in Google developers console  
-`"redirect_uris":["http://ec2-52-34-14-120.us.west-2.compute.amazonaws.com/oauth2callback"]`
+Ensure clients_secrets.json file and "authorized redirect URIs" in Google developers console are correct: 
+`"redirect_uris":["http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/oauth2callback"]`
 
 Change Facebook oAuth settings to list `http://ec2-52-34-14-120.us-west-2.compute.amazonaws.com/` as site URL
 
@@ -232,22 +230,23 @@ APT::Periodic::AutocleanInterval "7";
 
 To check updates: `/var/log/apt/history.log`  
 
-__Install monitoring application__  
+__Install monitoring applications__  
 that provides automated feedback on application availability status and system security alerts.
 
+[Munin](http://munin-monitoring.org/wiki/Documentation)
+[Fail2Ban](http://www.fail2ban.org/wiki/index.php/MANUAL_0_8)
 
-### Creator
+## Creator
 
 **Marie Leaf**
 
 * <https://twitter.com/mleafer>
 * <https://github.com/mleafer>
 
-### Concepts
+## Concepts
 
 
-
-### Resources
+## Resources
 http://askubuntu.com/questions/15433/unable-to-lock-the-administration-directory-var-lib-dpkg-is-another-process
 5
 
@@ -260,8 +259,6 @@ http://flask.pocoo.org/docs/0.10/deploying/mod_wsgi/#configuring-apache
 
 [Unattended Upgrades](https://www.howtoforge.com/how-to-configure-automatic-updates-on-debian-wheezy)
 
-[Fail2Ban](http://www.fail2ban.org/wiki/index.php/MANUAL_0_8)  
 [Fail2Ban Tutorial](https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04)  
 
-[Munin](http://munin-monitoring.org/wiki/Documentation)  
 [Munin Tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-munin-on-an-ubuntu-vps)
