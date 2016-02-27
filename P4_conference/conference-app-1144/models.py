@@ -27,8 +27,8 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
-    sessKeyWishlist = ndb.StringProperty(repeated=True)
 
+# only editable by users
 class ProfileMiniForm(messages.Message):
     """ProfileMiniForm -- update Profile form message"""
     displayName = messages.StringField(1)
@@ -70,9 +70,9 @@ class ConferenceForm(messages.Message):
     topics          = messages.StringField(4, repeated=True)
     city            = messages.StringField(5)
     startDate       = messages.StringField(6) #DateTimeField()
-    month           = messages.IntegerField(7)
-    maxAttendees    = messages.IntegerField(8)
-    seatsAvailable  = messages.IntegerField(9)
+    month           = messages.IntegerField(7, variant=messages.Variant.INT32)
+    maxAttendees    = messages.IntegerField(8, variant=messages.Variant.INT32)
+    seatsAvailable  = messages.IntegerField(9, variant=messages.Variant.INT32)
     endDate         = messages.StringField(10) #DateTimeField()
     websafeKey      = messages.StringField(11)
     organizerDisplayName = messages.StringField(12)
@@ -110,8 +110,9 @@ class ConferenceQueryForms(messages.Message):
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 
-# Task 1
 
+
+# Task 1 models
 class Session(ndb.Model):
     """Session -- Session object"""
     sessionName     = ndb.StringField(required=True)
@@ -120,7 +121,7 @@ class Session(ndb.Model):
     duration        = ndb.IntegerField()
     typeOfSession   = ndb.StringField() # use enum?
     date            = ndb.IntegerField()
-    startTime       = ndb.TimeProperty() # in 24 hr notation so it can be ordered
+    startTime       = ndb.IntegerField() # in 24 hr notation so it can be ordered
 
 class SessionForm(messages.Message):
     """SessionForm -- Session outbound form message"""
@@ -134,6 +135,7 @@ class SessionForm(messages.Message):
     websafeSessionKey = messages.StringField(8)
     organizerDisplayName = messages.StringField(9)
 
+
 class SessionQueryForm(messages.Message):
     """SessionQueryForm -- Session query inbound form message"""
     field = messages.StringField(1)
@@ -143,3 +145,4 @@ class SessionQueryForm(messages.Message):
 class SessionQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple SessionQueryForm inbound form message"""
     filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
+

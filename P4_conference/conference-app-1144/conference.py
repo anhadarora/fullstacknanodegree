@@ -49,10 +49,6 @@ API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 MEMCACHE_ANNOUNCEMENTS_KEY = "RECENT_ANNOUNCEMENTS"
 ANNOUNCEMENT_TPL = ('Last chance to attend! The following conferences '
                     'are nearly sold out: %s')
-
-# TODO task 4
-MEMCACHE_SESSIONS_KEY = "SPEAKER_SESSIONS"
-SESSIONS_TPL = ""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 DEFAULTS = {
@@ -78,7 +74,6 @@ FIELDS =    {
             'MAX_ATTENDEES': 'maxAttendees',
             }
 
-# ResourceContainers for request classes
 CONF_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
@@ -89,18 +84,11 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     websafeConferenceKey=messages.StringField(1),
 )
 
-WISH_POST_REQUEST = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-    websafeSessionKey=messages.StringField(1, required=True),
-)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# when up and running add ANDROID_CLIENT_ID and IOS_CLIENT_ID to allowed client IDs
-# and add audiences=[ANDROID_AUDIENCE], to @endpoints.api()
 
-@endpoints.api(name='conference', version='v1', 
-    allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
+@endpoints.api(name='conference', version='v1', audiences=[ANDROID_AUDIENCE],
+    allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID, ANDROID_CLIENT_ID, IOS_CLIENT_ID],
     scopes=[EMAIL_SCOPE])
 class ConferenceApi(remote.Service):
     """Conference API v0.1"""
@@ -170,7 +158,6 @@ class ConferenceApi(remote.Service):
         # create Conference, send email to organizer confirming
         # creation of Conference & return (modified) ConferenceForm
         Conference(**data).put()
-
         taskqueue.add(params={'email': user.email(),
             'conferenceInfo': repr(request)},
             url='/tasks/send_confirmation_email'
@@ -341,169 +328,13 @@ class ConferenceApi(remote.Service):
         )
 
 
-# - - - Session Objects - - - - - - - - - - - - - - - - - - -
-
-    # Task 1:
-
-    def _copySessionToForm(self, sesh, websafeConferenceKey):
-        """Copy relevant fields from Session to SessionForm."""
-        sf = SessionForm()
-        for field in sf.all_fields():
-            if hasattr(sesh, field.name):
-                # convert Date to date string; just copy others
-                if field.name.endswith('Date'):
-                    setattr(sf, field.name, str(getattr(sesh, field.name)))
-                else:
-                    setattr(sf, field.name, getattr(sesh, field.name))
-            elif field.name == "websafeConferenceKey":
-                setattr(sf, field.name, conf.key.urlsafe())
-        if websafeConferenceKey:
-            setattr(sf, 'conference', websafeConferenceKey)
-        sf.check_initialized()
-        return cf
-
-
-    def _createSessionObject(self, request):
-        """ -- open only to the organizer of the conference"""
-        # load necessary data items from the sess
-        # copy SessionForm/ProtoRPC Message into dict
-        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        # del data['websafeConferenceKey']
-        # del data['organizerDisplayName']
-
-        # add default values for those missing (both data model & outbound Message)
-        for df in DEFAULTS:
-            if data[df] in (None, []):
-                data[df] = DEFAULTS[df]
-                setattr(request, df, DEFAULTS[df])
-        # convert dates from strings to Date objects; set month based on start_date
-        if data['date']:
-            data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
-            data['month'] = data['date'].month
-        else:
-            data['month'] = 0
-
-
-        # generate Session Key based on Conference key and organizer(?)
-        # ID based on Profile key get Conference key from ID
-        c_key = ndb.Key(Conference, conf.key.id())
-        s_id = Session.allocate_ids(size=1, parent=c_key)[0]
-        s_key = ndb.Key(Session, s_key, parent=c_key)
-
-        data['key'] = s_key
-        data['organizerUserId'] = request.organizerUserId = user_id
-
-        Session(**data).put()
-
-        # Task 4 TODO: check to see if speaker exists in other sections, add to memcache if so
-    # Update featured speaker key in memcache
-
-    # check if speaker exists in other sessions; if so, add list of all sessions with associated speaker to memcache
-        sessions = Session.query(Session.speaker == data['speaker'],
-            ancestor=p_key) # TODO why ancestor=p_key??? all attributed to one conference? speaker[conference][session]??
-
-        # if number of sessions greater than one set featured speaker to memcache
-
-        number_sessions =  len(list(sessions))
-        if number_sessions > 1:
-
-            # add a new Memcache entry that features the speaker and session names
-            mcache = {}
-            mcache['speaker'] = data['speaker']
-            mcache['sessionNames'] = [session.name for session in sessions]
-            memcache.set(MEMCACHE_SESSIONS_KEY, mcache)
-            taskqueue.add(
-                params={'speaker': speaker,
-                        'websafeConferenceKey': request.websafeConferenceKey },
-                        url = '/tasks/cache_sessions')
-
-        if not memcache.set(MEMCACHE_SESSIONS_KEY, mcache):
-            logging.error('Memcache set failed.')
-
-
-        #return session form
-        return self._copySessionToForm(s_key.get())
-
-
-    @endpoints.method(SessionForm, SessionForm, path='conference/{websafeConferenceKey}/createsession',
-            http_method='POST', name='createSession')
-    def createSession(self, request):
-        """Create new Session in Conference."""
-        # fetch existing conference
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % request.websafeKey)
-
-        #fetch user
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id = getUserId(user)
-
-        # ensure user = organizer of the conference
-        owner = conf.key.parent().id()
-        if owner != user_id:
-            raise endpoints.UnauthorizedException("User (%s) is not the owner of the conference (%s)"%(user_id,owner))
-        if not request.name:
-            raise endpoints.BadRequestException("Conference 'name' field required")
-
-
-        return self._createSessionObject(request)
-        # return self._createSessionObject(request,conf.key,conf.name,user)  # why???
-
-
-
-
-    @endpoints.method(message_types.VoidMessage, SessionForms, path='conference/{websafeConferenceKey}/sessions',
-            http_method='POST', name='getConferenceSessions')
-    def getConferenceSessions(self, request):
-        """Return requested sessions (by websafeConferenceKey)."""
-        # make a query object for a specific ancestor
-        c_key = ndb.Key(Conference, websafeConferenceKey).get()
-        sessions = Session.query(ancestor=c_key)
-
-        # get parent conference key and name
-        conf = c_key.get()
-        name = getattr(conf, 'name') #why?
-
-        # return set of SessionForm objects per session
-        return SessionForms(
-            items=[self._copySessionToForm(sesh, websafeConferenceKey)
-                    for sesh in sessions]
-
-
-
-
-    # @endpoints.method(SESSION_GET_REQUEST, SessionForms, path='sessions/{websafeConferenceKey}/{typeOfSession}',
-    #         http_method='GET', name='getConferenceSessionsByType')
-    # def getConferenceSessionsByType(websafeConferenceKey, typeOfSession):
-    # """Given a conference, return all sessions of a specified type (eg lecture, keynote, workshop)"""
-
-    #     q = Session.query()
-    #     return q.filter(Session.typeOfSession == typeOfSession)
-
-    #     return SessionForms(
-    #         items=[self._copySessionToForm(sesh, websafeConferenceKey)
-    #             for sesh in q])
-
-
-
-
-    # @endpoints.method(SPEAKER_GET_REQUEST, SessionForms, path='sessions/{speaker}',
-    #         http_method='GET', name='getSessionsBySpeaker')
-    # def getSessionsBySpeaker(speaker):
-    #     #filter by property, returns all sessions by a particular speaker, across all conferences
-    #     q = Session.query()
-    #     return q.filter(Session.speaker == speaker)
-
-    #     return SessionForms(items=[self._copySessionToForm(sesh, websafeConferenceKey)] for sesh in q)
-
+# - - - Session objects - - - - - - - - - - - - - - - - - - - -
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
     def _copyProfileToForm(self, prof):
         """Copy relevant fields from Profile to ProfileForm."""
+        # copy relevant fields from Profile to ProfileForm
         pf = ProfileForm()
         for field in pf.all_fields():
             if hasattr(prof, field.name):
@@ -517,7 +348,7 @@ class ConferenceApi(remote.Service):
 
 
     def _getProfileFromUser(self):
-        """Return user Profile from datastore (with a key), creating new one if non-existent."""
+        """Return user Profile from datastore, creating new one if non-existent."""
         # make sure user is authed
         user = endpoints.get_current_user()
         if not user:
@@ -723,4 +554,3 @@ class ConferenceApi(remote.Service):
 
 
 api = endpoints.api_server([ConferenceApi]) # register API
-
