@@ -228,7 +228,8 @@ APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "7";
 ```
 
-To check updates: `/var/log/apt/history.log`  
+
+To check updates: `/var/log/apt/history.log`   
 
 __Install monitoring applications__  
 that provides automated feedback on application availability status and system security alerts.
