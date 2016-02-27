@@ -36,6 +36,10 @@ from models import ConferenceForms
 from models import ConferenceQueryForm
 from models import ConferenceQueryForms
 from models import TeeShirtSize
+from models import Session
+from models import SessionForm
+from models import SessionQueryForm
+from models import SessionQueryForms
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -56,6 +60,7 @@ DEFAULTS = {
     "maxAttendees": 0,
     "seatsAvailable": 0,
     "topics": [ "Default", "Topic" ],
+    "speaker": "To be announced"
 }
 
 OPERATORS = {
@@ -83,6 +88,7 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     ConferenceForm,
     websafeConferenceKey=messages.StringField(1),
 )
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -115,14 +121,6 @@ class ConferenceApi(remote.Service):
 
     def _createConferenceObject(self, request):
         """Create or update Conference object, returning ConferenceForm/request."""
-        # preload necessary data items
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id = getUserId(user)
-
-        if not request.name:
-            raise endpoints.BadRequestException("Conference 'name' field required")
 
         # copy ConferenceForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
@@ -330,6 +328,97 @@ class ConferenceApi(remote.Service):
 
 # - - - Session objects - - - - - - - - - - - - - - - - - - - -
 
+    # Task 1
+    def _copySessionToForm(self, sesh):
+        """Copy relevant fields from Session to SessionForm."""
+        sf = SessionForm()
+        for field in sf.all_fields():
+            if hasattr(sesh, field.name):
+                # convert Date to date string; just copy others
+                if field.name.endswith('Date'):
+                    setattr(sf, field.name, str(getattr(sesh, field.name)))
+                else:
+                    setattr(sf, field.name, getattr(sesh, field.name))
+            elif field.name == "websafeSessionKey":
+                setattr(sf, field.name, sesh.key.urlsafe())
+        sf.check_initialized()
+        return sf
+
+    def _createSessionObject(self, request):
+        """open only to the organizer of the conference"""
+        # preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
+
+        if not request.name:
+            raise endpoints.BadRequestException("Session 'name' field required")
+
+        # copy SessionForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
+        # del data['organizerDisplayName']
+
+        # fetch and check conference
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        # check that conference exists
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+
+        # ensure user is owner
+        if user_id != conf.organizerUserId:
+            raise endpoints.ForbiddenException(
+                'Only the owner can add sessions.')
+
+        # add default values for those missing (both data model & outbound Message)
+        for df in DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = DEFAULTS[df]
+                setattr(request, df, DEFAULTS[df])
+
+        # convert dates from strings to Date objects; set month based on start_date
+        if data['date']:
+            data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
+            data['month'] = data['date'].month
+        else:
+            data['month'] = 0
+
+        # converts to string
+        if data['sessionType']:
+            data['sessionType'] = str(data['sessionType'])
+
+        # set seatsAvailable to be same as maxAttendees on creation
+        # both for data model & outbound Message
+        if data["maxAttendees"] > 0:
+            data["seatsAvailable"] = data["maxAttendees"]
+            setattr(request, "seatsAvailable", data["maxAttendees"])
+
+        # generate Session Key based on Conference key and organizer(?)
+        # ID based on Profile key get Conference key from ID
+        c_key = ndb.Key(Conference, conf.key.id())
+        s_id = Session.allocate_ids(size=1, parent=c_key)[0]
+        s_key = ndb.Key(Session, s_key, parent=c_key)
+        data['key'] = s_key
+        data['organizerUserId'] = request.organizerUserId = user_id
+        # del data['websafeConferenceKey']
+        del data['websafeSessionkey']
+
+        Session(**data).put()
+
+        # Task 4 TODO: check to see if speaker exists in other sections, add to memcache if so
+
+        #return session form
+        return request
+
+    @endpoints.method(SessionForm, SessionForm,
+                      path='sessions',
+                      http_method='POST', name='createSession')
+    def createSession(self, request):
+        """Open to the organizer of the conference"""
+        return self._createSessionObject(request)
+
+
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
     def _copyProfileToForm(self, prof):
@@ -345,7 +434,6 @@ class ConferenceApi(remote.Service):
                     setattr(pf, field.name, getattr(prof, field.name))
         pf.check_initialized()
         return pf
-
 
     def _getProfileFromUser(self):
         """Return user Profile from datastore, creating new one if non-existent."""
@@ -370,7 +458,6 @@ class ConferenceApi(remote.Service):
 
         return profile      # return Profile
 
-
     def _doProfile(self, save_request=None):
         """Get user Profile and return to user, possibly updating it first."""
         # get user Profile
@@ -392,13 +479,11 @@ class ConferenceApi(remote.Service):
         # return ProfileForm
         return self._copyProfileToForm(prof)
 
-
     @endpoints.method(message_types.VoidMessage, ProfileForm,
             path='profile', http_method='GET', name='getProfile')
     def getProfile(self, request):
         """Return user profile."""
         return self._doProfile()
-
 
     @endpoints.method(ProfileMiniForm, ProfileForm,
             path='profile', http_method='POST', name='saveProfile')
@@ -433,10 +518,9 @@ class ConferenceApi(remote.Service):
 
         return announcement
 
-
     @endpoints.method(message_types.VoidMessage, StringMessage,
-            path='conference/announcement/get',
-            http_method='GET', name='getAnnouncement')
+                      path='conference/announcement/get',
+                      http_method='GET', name='getAnnouncement')
     def getAnnouncement(self, request):
         """Return Announcement from memcache."""
         return StringMessage(data=memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY) or "")

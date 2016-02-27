@@ -111,17 +111,16 @@ class ConferenceQueryForms(messages.Message):
 
 
 
-
-# Task 1 models
+# Task 1 models ---------
 class Session(ndb.Model):
     """Session -- Session object"""
-    sessionName     = ndb.StringField(required=True)
-    highlights      = ndb.StringField(repeated=True)
-    speaker         = ndb.StringField(required=True)
-    duration        = ndb.IntegerField()
-    typeOfSession   = ndb.StringField() # use enum?
-    date            = ndb.IntegerField()
-    startTime       = ndb.IntegerField() # in 24 hr notation so it can be ordered
+    sessionName     = ndb.StringProperty(required=True)
+    highlights      = ndb.StringProperty(repeated=True)
+    speaker         = ndb.StringProperty(required=True)
+    duration        = ndb.IntegerProperty()
+    typeOfSession   = ndb.StringProperty() # use enum?
+    date            = ndb.IntegerProperty()
+    startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
 
 class SessionForm(messages.Message):
     """SessionForm -- Session outbound form message"""
@@ -133,7 +132,7 @@ class SessionForm(messages.Message):
     date                 = messages.StringField(6) # DateTimeField()
     startTime            = messages.StringField(7) # DateTimeField()
     websafeSessionKey = messages.StringField(8)
-    organizerDisplayName = messages.StringField(9)
+
 
 
 class SessionQueryForm(messages.Message):
