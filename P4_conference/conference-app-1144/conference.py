@@ -38,6 +38,7 @@ from models import ConferenceQueryForms
 from models import TeeShirtSize
 from models import Session
 from models import SessionForm
+from models import SessionForms
 from models import SessionQueryForm
 from models import SessionQueryForms
 
@@ -107,6 +108,16 @@ SESSION_GET_REQUEST = endpoints.ResourceContainer(
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
     SessionForm,
     websafeConferenceKey=messages.StringField(1, required=True),
+)
+
+WISH_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1),
+)
+
+WISH_POST_REQUEST = endpoints.ResourceContainer(
+    ConferenceForm,
+    websafeConferenceKey=messages.StringField(1),
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -437,26 +448,51 @@ class ConferenceApi(remote.Service):
         """Open to the organizer of the conference"""
         return self._createSessionObject(request)
 
-# ## TO DO NEED TO FIGURE OUT HOW TO GET CONFERENCE SESSIONS
-#     @endpoints.method(CONF_GET_REQUEST, SessionForms, path='conference/{websafeConferenceKey}/sessions',
-#             http_method='POST', name='getConferenceSessions')
-#     def getConferenceSessions(self, request):
-#         """Return requested sessions (by websafeConferenceKey)."""
+## TO DO NEED TO FIGURE OUT HOW TO GET CONFERENCE SESSIONS
+    @endpoints.method(CONF_GET_REQUEST, SessionForms, path='conference/{websafeConferenceKey}/sessions',
+            http_method='POST', name='getConferenceSessions')
+    def getConferenceSessions(self, request):
+        """Return requested sessions (by websafeConferenceKey)."""
 
-#         # make a query object for a specific ancestor that returns entity for the key
-#         c_key = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        # make a query object for a specific ancestor that returns entity for the key
+        # create ancestor query for conference (by key match)
+        # delete the "Conference" after Key if deployment doesn't work
+        # c_key = ndb.Key(urlsafe=websafeConferenceKey)
+        # conference = c_key.get()
+        # sessions = Session.query(ancestor=conference)
 
-#         # ensure conference exists
-#         if not c_key:
-#             raise endpoints.NotFoundException(
-#                 'No conference found with key: %s' % request.websafeConferenceKey)
-        
-#         # create ancestor query for conference (by key match)
-#         sessions = Session.query(ancestor=ndb.Key(Conference, c_key.key.id())
-        
-#         # return set of SessionForm objects for each session
-#         return SessionForms(
-#             items=[self._copySessionToForm(sesh) for sesh in sessions]
+        # # OR
+
+        # c_key = ndb.Key(urlsafe=request.websafeConferenceKey)
+        # sessions = Session.query(ancestor=conference.key).fetch()
+        # # return set of SessionForm objects for each session
+        # return SessionForms(
+        #     items=[self._copySessionToForm(sesh) for sesh in sessions]
+        # OR
+
+        # conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
+        # # query for sessions with this conference as ancestor
+        # sessions = Session.query(ancestor=conf_key).fetch()
+        # # return set of SessionForm objects per Speaker
+        # return SessionForms(items=[self._copySessionToForm(session) \
+        #     for session in sessions])
+
+    @endpoints.method(SESSION_GET_REQUEST, SessionForms,
+                      path='sessions/{websafeConferenceKey}/{typeOfSession}',
+                      http_method='GET', 
+                      name='getConferenceSessionsByType')
+    def getConferenceSessionsByType(self, request):
+        """get all Sessions of a particular type for a particular Conference"""
+        # return key for conference
+        conf_key = ndb.Key(urlsafe=request.websafeConferenceKey).get().key
+        # query for sessions with this conference as ancestor
+        sessions = Session.query(Session.types==request.typeOfsession, ancestor=conf_key)
+        # return set of SessionForm objects per Speaker
+        return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
+
+# - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
+
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
