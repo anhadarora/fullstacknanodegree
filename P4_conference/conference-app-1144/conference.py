@@ -493,6 +493,50 @@ class ConferenceApi(remote.Service):
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
+    @endpoints.method(WISH_POST_REQUEST, StringMessage,
+                      path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
+                      http_method='POST',
+                      name='addSessionToWishlist')
+    def addSessionToWishlist(self, request):
+     # -- adds the session to the user's list of sessions they are interested in attending decided that wishlist is open to all conferences so user can use as a bookmarking function 
+
+        user = self._getProfileFromUser()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        p_key = user.key
+
+        # confKey = request.websafeConferenceKey
+        sessKey = request.websafeSessionKey
+
+        # query by user key as the ancestor
+        prof = p_key.get()
+
+        if prof and prof.sessKeyWishlist:
+            prof.sessKeyWishlist.append(sessKey)
+        else:
+            raise endpoints.NotFoundException('Registration required')
+        prof.put()
+
+
+    # @endpoints.method(message_types.VoidMessage, SessionForms,
+    #                   path='conference/session/wishlist/get',
+    #                   http_method='POST',
+    #                   name='getSessionsFromWishlist')
+    # def getSessionsInWishlist(self, request):
+    #     """Get Sessions from current user wishlist"""
+    #     # preload necessary data items
+    #     user = endpoints.get_current_user()
+    #     if not user:
+    #         raise endpoints.UnauthorizedException('Authorization required')
+
+    #     # get profile and wishlist
+    #     prof = self._getProfileFromUser()
+    #     sessKeys = user.sessKeyWishlist
+    #     wishlist = [sessKey.get() for sessKey in sessKeys]
+
+    #     # return the wishlist
+    #     return SessionForms(
+    #         items=[self._copySessionToForm(sessKey) for sessKey in wishlist]
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
