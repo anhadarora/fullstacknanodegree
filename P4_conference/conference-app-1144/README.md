@@ -55,6 +55,18 @@ __Task 2: Add Sessions to User Wishlist__
 
 __Task 3: Work on indexes and queries__
 
+3.1 - Make sure the indexes support the type of queries required by the new Endpoints methods.  
+*Please see index.yaml file.*
+
+3.2 - Come up with two additional queries  
+
+*3.2.1 - Query other attendees of a conference: provides a socialfeed list of other attendees registered to a conference that user is registered to.*
+
+*3.2.2 - Query past sessions: does exactly that*
+
+3.3 - Solve the following query related problem.
+*This query requires an inequality filter, and datastore only supports inequality filtering on a single property (not multiple properties)*
+
 __Task 4: Add a Task__
 
 
