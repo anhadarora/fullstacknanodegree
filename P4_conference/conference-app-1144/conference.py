@@ -89,6 +89,25 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     websafeConferenceKey=messages.StringField(1),
 )
 
+# in the midst of implementing
+SESSIONFIELDS =    {
+            'DATE': 'date',
+            'TIME': 'time',
+            'DURATION': 'duration',
+            'LOCATION': 'location',
+            'SEATSAVAILABLE': 'seatsavailable'
+            }
+
+SESSION_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1, required=True),
+    typeOfSession=messages.StringField(2)
+)
+
+SESSION_POST_REQUEST = endpoints.ResourceContainer(
+    SessionForm,
+    websafeConferenceKey=messages.StringField(1, required=True),
+)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -402,7 +421,7 @@ class ConferenceApi(remote.Service):
         data['key'] = s_key
         data['organizerUserId'] = request.organizerUserId = user_id
         # del data['websafeConferenceKey']
-        del data['websafeSessionkey']
+        # del data['websafeSessionkey']
 
         Session(**data).put()
 
@@ -417,6 +436,27 @@ class ConferenceApi(remote.Service):
     def createSession(self, request):
         """Open to the organizer of the conference"""
         return self._createSessionObject(request)
+
+# ## TO DO NEED TO FIGURE OUT HOW TO GET CONFERENCE SESSIONS
+#     @endpoints.method(CONF_GET_REQUEST, SessionForms, path='conference/{websafeConferenceKey}/sessions',
+#             http_method='POST', name='getConferenceSessions')
+#     def getConferenceSessions(self, request):
+#         """Return requested sessions (by websafeConferenceKey)."""
+
+#         # make a query object for a specific ancestor that returns entity for the key
+#         c_key = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+
+#         # ensure conference exists
+#         if not c_key:
+#             raise endpoints.NotFoundException(
+#                 'No conference found with key: %s' % request.websafeConferenceKey)
+        
+#         # create ancestor query for conference (by key match)
+#         sessions = Session.query(ancestor=ndb.Key(Conference, c_key.key.id())
+        
+#         # return set of SessionForm objects for each session
+#         return SessionForms(
+#             items=[self._copySessionToForm(sesh) for sesh in sessions]
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
