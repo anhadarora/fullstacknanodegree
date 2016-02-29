@@ -122,6 +122,7 @@ class Session(ndb.Model):
     date            = ndb.IntegerProperty()
     startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
 
+# defines input parameters for _createSessionObject
 class SessionForm(messages.Message):
     """SessionForm -- Session outbound form message"""
     sessionName          = messages.StringField(1)
