@@ -27,6 +27,7 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
+    sessKeyWishlist = ndb.StringProperty(repeated=True)
 
 # only editable by users
 class ProfileMiniForm(messages.Message):
@@ -74,7 +75,7 @@ class ConferenceForm(messages.Message):
     maxAttendees    = messages.IntegerField(8, variant=messages.Variant.INT32)
     seatsAvailable  = messages.IntegerField(9, variant=messages.Variant.INT32)
     endDate         = messages.StringField(10) #DateTimeField()
-    websafeKey      = messages.StringField(11)
+    websafeConferenceKey = messages.StringField(11)
     organizerDisplayName = messages.StringField(12)
 
 class ConferenceForms(messages.Message):

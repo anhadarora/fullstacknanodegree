@@ -48,6 +48,7 @@ from settings import IOS_CLIENT_ID
 from settings import ANDROID_AUDIENCE
 
 from utils import getUserId
+import logging
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
@@ -61,7 +62,6 @@ DEFAULTS = {
     "maxAttendees": 0,
     "seatsAvailable": 0,
     "topics": [ "Default", "Topic" ],
-    "speaker": "To be announced"
 }
 
 OPERATORS = {
@@ -151,6 +151,10 @@ class ConferenceApi(remote.Service):
 
     def _createConferenceObject(self, request):
         """Create or update Conference object, returning ConferenceForm/request."""
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
 
         # copy ConferenceForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
@@ -160,6 +164,7 @@ class ConferenceApi(remote.Service):
         # add default values for those missing (both data model & outbound Message)
         for df in DEFAULTS:
             if data[df] in (None, []):
+                logging.debug(DEFAULTS[df])
                 data[df] = DEFAULTS[df]
                 setattr(request, df, DEFAULTS[df])
 
@@ -382,38 +387,42 @@ class ConferenceApi(remote.Service):
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = getUserId(user)
 
-        if not request.name:
+        if not request.sessionName:
             raise endpoints.BadRequestException("Session 'name' field required")
 
         # copy SessionForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        # del data['organizerDisplayName']
+        del data['websafeSessionKey']
+        del data['websafeConferenceKey']
 
-        # fetch and check conference
+        # fetch and check conferencee
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
         # check that conference exists
         if not conf:
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
+        logging.debug("1.")
+
         # ensure user is owner
         if user_id != conf.organizerUserId:
             raise endpoints.ForbiddenException(
                 'Only the owner can add sessions.')
 
+        logging.debug("2.")
         # add default values for those missing (both data model & outbound Message)
         for df in DEFAULTS:
             if data[df] in (None, []):
                 data[df] = DEFAULTS[df]
                 setattr(request, df, DEFAULTS[df])
-
+        logging.debug("3.")
         # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
             data['month'] = data['date'].month
         else:
             data['month'] = 0
-
+        logging.debug("4.")
         # converts to string
         if data['sessionType']:
             data['sessionType'] = str(data['sessionType'])
@@ -434,6 +443,7 @@ class ConferenceApi(remote.Service):
         # del data['websafeConferenceKey']
         # del data['websafeSessionkey']
 
+
         Session(**data).put()
 
         # Task 4 TODO: check to see if speaker exists in other sections, add to memcache if so
@@ -441,8 +451,9 @@ class ConferenceApi(remote.Service):
         #return session form
         return request
 
+
     @endpoints.method(SessionForm, SessionForm,
-                      path='sessions',
+                      path='conference/{websafeConferenceKey}/sessions/new',
                       http_method='POST', name='createSession')
     def createSession(self, request):
         """Open to the organizer of the conference"""
@@ -493,29 +504,26 @@ class ConferenceApi(remote.Service):
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
-    # @endpoints.method(WISH_POST_REQUEST, StringMessage,
-    #                   path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
-    #                   http_method='POST',
-    #                   name='addSessionToWishlist')
-    # def addSessionToWishlist(self, request):
-    #  # -- adds the session to the user's list of sessions they are interested in attending decided that wishlist is open to all conferences so user can use as a bookmarking function 
+    @endpoints.method(WISH_POST_REQUEST, StringMessage,
+                      path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
+                      http_method='POST',
+                      name='addSessionToWishlist')
+    def addSessionToWishlist(self, request):
+     # -- adds the session to the user's list of sessions they are interested in attending decided that wishlist is open to all conferences so user can use as a bookmarking function 
 
-    #     user = self._getProfileFromUser()
-    #     if not user:
-    #         raise endpoints.UnauthorizedException('Authorization required')
-    #     p_key = user.key
+        user = self._getProfileFromUser()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
 
-    #     # confKey = ndb.Key(urlsafe=request.websafeConferenceKey).get().key
-    #     sessKey = ndb.Key(urlsafe=request.websafeSessionKey).get().key
+        # query by user key as the ancestor
+        p_key = user.key
+        prof = p_key.get()
 
-    #     # query by user key as the ancestor
-    #     prof = p_key.get()
-
-    #     if prof and prof.sessKeyWishlist:
-    #         prof.sessKeyWishlist.append(sessKey)
-    #     else:
-    #         raise endpoints.NotFoundException('Registration required')
-    #     prof.put()
+        if prof and prof.sessKeyWishlist:
+            prof.sessKeyWishlist.append(websafeSessionKey)
+        else:
+            raise endpoints.NotFoundException('Registration required')
+        prof.put()
 
 
     # @endpoints.method(message_types.VoidMessage, SessionForms,
