@@ -122,19 +122,21 @@ class Session(ndb.Model):
     typeOfSession   = ndb.StringProperty() # use enum?
     date            = ndb.IntegerProperty()
     startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
+    organizerUserId = ndb.StringProperty()
 
 # defines input parameters for _createSessionObject
 class SessionForm(messages.Message):
     """SessionForm -- Session outbound form message"""
     sessionName          = messages.StringField(1)
-    highlights           = messages.StringField(2)
+    highlights           = messages.StringField(2, repeated=True)
     speaker              = messages.StringField(3)
-    duration             = messages.StringField(4)
-    typeOfSession        = messages.StringField(5, repeated=True) # use enum?
-    date                 = messages.StringField(6) # DateTimeField()
-    startTime            = messages.StringField(7) # DateTimeField()
-    websafeSessionKey = messages.StringField(8)
-    websafeConferenceKey    = messages.StringField(9)
+    duration             = messages.IntegerField(4, variant=messages.Variant.INT32)
+    typeOfSession        = messages.StringField(5) # use enum?
+    date                 = messages.IntegerField(6, variant=messages.Variant.INT32) # DateTimeField()
+    startTime            = messages.IntegerField(7, variant=messages.Variant.INT32) # DateTimeField()
+    organizerUserId = messages.StringField(8)
+    websafeSessionKey = messages.StringField(9)
+    websafeConferenceKey    = messages.StringField(10)
 
 class SessionForms(messages.Message):
     """SessionForms -- multiple Session outbound form message"""

@@ -392,7 +392,7 @@ class ConferenceApi(remote.Service):
 
         # copy SessionForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        # del data['websafeSessionKey']
+        del data['websafeSessionKey']
         # del data['websafeConferenceKey']
 
         # fetch and check conferencee
@@ -403,27 +403,21 @@ class ConferenceApi(remote.Service):
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
-        logging.debug("1.")
-
         # ensure user is owner
         if user_id != conf.organizerUserId:
             raise endpoints.ForbiddenException(
                 'Only the owner can add sessions.')
 
-        logging.debug("2.")
         # add default values for those missing (both data model & outbound Message)
         # for df in DEFAULTS:
         #     if data[df] in (None, []):
         #         data[df] = DEFAULTS[df]
         #         setattr(request, df, DEFAULTS[df])
-        logging.debug("3.")
+
         # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
-            data['month'] = data['date'].month
-        else:
-            data['month'] = 0
-        logging.debug("4.")
+
         # converts to string
         if data['typeOfSession']:
             data['typeOfSession'] = str(data['typeOfSession'])
@@ -437,8 +431,8 @@ class ConferenceApi(remote.Service):
         data['key'] = s_key
         data['organizerUserId'] = request.organizerUserId = user_id
         del data['websafeConferenceKey']
-        del data['websafeSessionkey']
-
+        # del data['websafeSessionkey'] (only need to put if updating?)
+        # del data['organizerUserId']
 
         Session(**data).put()
 
