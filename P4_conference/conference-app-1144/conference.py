@@ -63,7 +63,11 @@ DEFAULTS = {
     "seatsAvailable": 0,
     "topics": [ "Default", "Topic" ],
 }
-
+SESHDEFAULTS = {
+    "duration": 0,
+    "startTime": 00:00,
+    "highlists": [ "Default", "Highlights" ],
+}
 OPERATORS = {
             'EQ':   '=',
             'GT':   '>',
@@ -164,7 +168,6 @@ class ConferenceApi(remote.Service):
         # add default values for those missing (both data model & outbound Message)
         for df in DEFAULTS:
             if data[df] in (None, []):
-                logging.debug(DEFAULTS[df])
                 data[df] = DEFAULTS[df]
                 setattr(request, df, DEFAULTS[df])
 
@@ -397,8 +400,6 @@ class ConferenceApi(remote.Service):
 
         # fetch and check conferencee
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-
-        # check that conference exists
         if not conf:
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
@@ -409,16 +410,15 @@ class ConferenceApi(remote.Service):
                 'Only the owner can add sessions.')
 
         # add default values for those missing (both data model & outbound Message)
-        # for df in DEFAULTS:
-        #     if data[df] in (None, []):
-        #         data[df] = DEFAULTS[df]
-        #         setattr(request, df, DEFAULTS[df])
+        for df in SESHDEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SESHDEFAULTS[df]
+                setattr(request, df, SESHDEFAULTS[df])
 
         # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
-
-        # converts to string
+        # converts type of session to string (TODO set as dropdown menu)
         if data['typeOfSession']:
             data['typeOfSession'] = str(data['typeOfSession'])
 
