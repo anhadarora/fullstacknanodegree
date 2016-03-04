@@ -65,8 +65,8 @@ DEFAULTS = {
 }
 SESHDEFAULTS = {
     "duration": 0,
-    "startTime": 00:00,
-    "highlists": [ "Default", "Highlights" ],
+    "startTime": 0,
+    "highlights": [ "Default", "Highlights" ],
 }
 OPERATORS = {
             'EQ':   '=',
