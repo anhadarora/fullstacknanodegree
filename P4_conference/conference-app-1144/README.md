@@ -41,15 +41,20 @@ Leafer's Conference deployed on App Engine is a project created by [Marie Leaf](
 * <https://github.com/mleafer>
 
 ### Concepts
-* Google Cloud Endpoints
+* Google Cloud Endpoints(write/call endpoint functions using JS client library, use APIs explorer for publicly available google apis)
 * Google Developer Console
 * ProtoRPC
 * Advanced Datastore concepts (indexes, query restrictions, dynamic filters, transactions)
 * Advanced App Engine topics (NDB, memcache, task queues, cron jobs, push/pull queues, edge caching, modules)
 
+
 ### Tasks
 
 __Task 1: Session and Speaker Class Design Choices__
+
+I created sessions as a separate 'kind' object to store different entities with speaker as a property. The speaker was not created as separate object, but kept as a property to mitigate administrative issues and to ensure centrality of all 'people' objects. (e.g. if you need comprehensive user/headcount list for administrative purposes)
+
+Sessions were created with a parent conference key, and created to ensure that the user creating the session is the organizer of the parent conference. 
 
 __Task 2: Add Sessions to User Wishlist__
 

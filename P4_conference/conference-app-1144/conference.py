@@ -127,6 +127,8 @@ WISH_POST_REQUEST = endpoints.ResourceContainer(
     websafeSessionKey=messages.StringField(1),
 )
 
+MEMCACHE_SESSIONS_KEY = "SPEAKER_SESSIONS"
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -439,8 +441,24 @@ class ConferenceApi(remote.Service):
 
         Session(**data).put()
 
-        # Task 4 TODO: check to see if speaker exists in other sections, add to memcache if so
+        # Task 4 
+        # check if speaker exists in other sessions; if so, add list of all sessions with associated speaker to memcache
+        sessions = Session.query(Session.speaker == data['speaker'],
+            ancestor=p_key) # TODO why ancestor=p_key??? all attributed to one conference? speaker[conference][session]??
+        if len(list(sessions)) > 1: 
+        # add a new Memcache entry that features the speaker and session names
+            to_cache = {}
+            to_cache['speaker'] = data['speaker']
+            to_cache['sessionNames'] = [session.name for session in sessions]
+            memcache.set(MEMCACHE_SESSIONS_KEY, to_cache)
 
+            if not memcache.set(MEMCACHE_SESSIONS_KEY, to_cache):
+                logging.error('Memcache set failed.')
+
+            taskqueue.add(params={'speaker': speaker.name(),
+            'sessions': repr(request)}, # TODO add logic that iterates through the sessions
+            url='/tasks/cache_sessions'
+            )
         #return session form
         return request
 
@@ -514,6 +532,7 @@ class ConferenceApi(remote.Service):
 
 
 
+
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
     @endpoints.method(WISH_POST_REQUEST, SessionForm,
@@ -566,10 +585,36 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in sessions]
         )
 
-    # @endpoints.method(message_types.VoidMessage, SessionForms,
+
+#TO DO NEED TO FIGURE OUT HOW TO DELETE
+    # @endpoints.method(WISH_POST_REQUEST, SessionForm, 
+    #         path='conference/{websafeSessionKey}/wishlist/delete,
     #         http_method='POST', name='deleteSessionInWishlist')
     # def deleteSessionInWishlist(self, request):
+    #     """Deletes session in wishlist."""
 
+    #     user = endpoints.get_current_user()
+    #     if not user:
+    #         raise endpoints.UnauthorizedException('Authorization required')
+
+    #     # get and check session
+    #     session = ndb.Key(urlsafe=request.websafeSessionKey).get()
+    #     if not session:
+    #         raise endpoints.NotFoundException(
+    #             'No session found with key: %s' % request.websafeSessionKey)
+    #     # get profile
+    #     prof = self._getProfileFromUser()
+
+    #     # check if session in wishlist
+    #     if session.key in prof.sessKeyWishlist:
+    #         raise endpoints.BadRequestException(
+    #             'Session not in wishlist: %s' % request.websafeSessionKey)
+
+    #     # append to user profile's wishlist
+    #     prof.sessKeyWishlist.pop(session.key)
+    #     prof.put()
+
+    #     return self._copySessionToForm(session)
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
     def _copyProfileToForm(self, prof):
