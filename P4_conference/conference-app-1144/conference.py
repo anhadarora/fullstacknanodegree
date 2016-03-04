@@ -117,7 +117,7 @@ WISH_GET_REQUEST = endpoints.ResourceContainer(
 
 WISH_POST_REQUEST = endpoints.ResourceContainer(
     ConferenceForm,
-    websafeConferenceKey=messages.StringField(1),
+    websafeSessionKey=messages.StringField(1),
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +141,7 @@ class ConferenceApi(remote.Service):
                     setattr(cf, field.name, str(getattr(conf, field.name)))
                 else:
                     setattr(cf, field.name, getattr(conf, field.name))
-            elif field.name == "websafeKey":
+            elif field.name == "websafeConferenceKey":
                 setattr(cf, field.name, conf.key.urlsafe())
         if displayName:
             setattr(cf, 'organizerDisplayName', displayName)
@@ -158,7 +158,7 @@ class ConferenceApi(remote.Service):
 
         # copy ConferenceForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        del data['websafeKey']
+        del data['websafeConferenceKey']
         del data['organizerDisplayName']
 
         # add default values for those missing (both data model & outbound Message)
@@ -392,11 +392,12 @@ class ConferenceApi(remote.Service):
 
         # copy SessionForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        del data['websafeSessionKey']
-        del data['websafeConferenceKey']
+        # del data['websafeSessionKey']
+        # del data['websafeConferenceKey']
 
         # fetch and check conferencee
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+
         # check that conference exists
         if not conf:
             raise endpoints.NotFoundException(
@@ -411,10 +412,10 @@ class ConferenceApi(remote.Service):
 
         logging.debug("2.")
         # add default values for those missing (both data model & outbound Message)
-        for df in DEFAULTS:
-            if data[df] in (None, []):
-                data[df] = DEFAULTS[df]
-                setattr(request, df, DEFAULTS[df])
+        # for df in DEFAULTS:
+        #     if data[df] in (None, []):
+        #         data[df] = DEFAULTS[df]
+        #         setattr(request, df, DEFAULTS[df])
         logging.debug("3.")
         # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
@@ -424,24 +425,19 @@ class ConferenceApi(remote.Service):
             data['month'] = 0
         logging.debug("4.")
         # converts to string
-        if data['sessionType']:
-            data['sessionType'] = str(data['sessionType'])
+        if data['typeOfSession']:
+            data['typeOfSession'] = str(data['typeOfSession'])
 
-        # set seatsAvailable to be same as maxAttendees on creation
-        # both for data model & outbound Message
-        if data["maxAttendees"] > 0:
-            data["seatsAvailable"] = data["maxAttendees"]
-            setattr(request, "seatsAvailable", data["maxAttendees"])
 
         # generate Session Key based on Conference key and organizer(?)
         # ID based on Profile key get Conference key from ID
         c_key = ndb.Key(Conference, conf.key.id())
         s_id = Session.allocate_ids(size=1, parent=c_key)[0]
-        s_key = ndb.Key(Session, s_key, parent=c_key)
+        s_key = ndb.Key(Session, s_id, parent=c_key)
         data['key'] = s_key
         data['organizerUserId'] = request.organizerUserId = user_id
-        # del data['websafeConferenceKey']
-        # del data['websafeSessionkey']
+        del data['websafeConferenceKey']
+        del data['websafeSessionkey']
 
 
         Session(**data).put()
@@ -505,7 +501,7 @@ class ConferenceApi(remote.Service):
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
     @endpoints.method(WISH_POST_REQUEST, StringMessage,
-                      path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafekey and websadesessionkey in the url here??
+                      path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafeConferenceKey and websadesessionkey in the url here??
                       http_method='POST',
                       name='addSessionToWishlist')
     def addSessionToWishlist(self, request):
