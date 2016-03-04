@@ -62,6 +62,7 @@ class SessionQueryForm(messages.Message):
 class SessionQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple SessionQueryForm inbound form message"""
     filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
+
 class Profile(ndb.Model):
     """Profile -- User profile object"""
     displayName = ndb.StringProperty()

@@ -452,34 +452,34 @@ class ConferenceApi(remote.Service):
         """Open to the organizer of the conference"""
         return self._createSessionObject(request)
 
-## TO DO NEED TO FIGURE OUT HOW TO GET CONFERENCE SESSIONS
+
     @endpoints.method(CONF_GET_REQUEST, SessionForms, path='conference/{websafeConferenceKey}/sessions',
-            http_method='POST', name='getConferenceSessions')
+            http_method='GET', name='getConferenceSessions')
     def getConferenceSessions(self, request):
         """Return requested sessions (by websafeConferenceKey)."""
 
-        # make a query object for a specific ancestor that returns entity for the key
-        # create ancestor query for conference (by key match)
-        # delete the "Conference" after Key if deployment doesn't work
-        # c_key = ndb.Key(urlsafe=websafeConferenceKey)
-        # conference = c_key.get()
-        # sessions = Session.query(ancestor=conference)
+         # copy ConferenceForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
 
-        # # OR
+        # get and check conf exists
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
 
-        # c_key = ndb.Key(urlsafe=request.websafeConferenceKey)
-        # sessions = Session.query(ancestor=conference.key).fetch()
-        # # return set of SessionForm objects for each session
-        # return SessionForms(
-        #     items=[self._copySessionToForm(sesh) for sesh in sessions]
-        # OR
 
-        # conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
-        # # query for sessions with this conference as ancestor
-        # sessions = Session.query(ancestor=conf_key).fetch()
-        # # return set of SessionForm objects per Speaker
-        # return SessionForms(items=[self._copySessionToForm(session) \
-        #     for session in sessions])
+        # query for sessions with this conference as ancestor
+        sessions = Session.query(ancestor=ndb.Key(Conference, conf.key.id()))
+        # return set of SessionForm objects for conference
+        return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
+
+
+
+
+
+
+
 
     @endpoints.method(SESSION_GET_REQUEST, SessionForms,
                       path='sessions/{websafeConferenceKey}/{typeOfSession}',
@@ -527,27 +527,29 @@ class ConferenceApi(remote.Service):
 
         return self._copySessionToForm(session)
 
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+            http_method='POST', name='getSessionsInWishlist')
+    def getSessionsInWishlist(self, request):
+        """Returns a user's session wishlist"""
+        # preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+
+        # get profile and wishlist
+        prof = self._getProfileFromUser()
+        s_keys = prof.sessKeyWishlist
+        sessions = [s_key.get() for s_key in s_keys]
+
+
+        # return list of sessions
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
 
     # @endpoints.method(message_types.VoidMessage, SessionForms,
-    #                   path='conference/session/wishlist/get',
-    #                   http_method='POST',
-    #                   name='getSessionsFromWishlist')
-    # def getSessionsInWishlist(self, request):
-    #     """Get Sessions from current user wishlist"""
-    #     # preload necessary data items
-    #     user = endpoints.get_current_user()
-    #     if not user:
-    #         raise endpoints.UnauthorizedException('Authorization required')
-
-    #     # get profile and wishlist
-    #     prof = self._getProfileFromUser()
-    #     sessKeys = user.sessKeyWishlist
-    #     wishlist = [sessKey.get() for sessKey in sessKeys]
-
-    #     # return the wishlist
-    #     return SessionForms(
-    #         items=[self._copySessionToForm(sessKey) for sessKey in wishlist]
-
+    #         http_method='POST', name='deleteSessionInWishlist')
+    # def deleteSessionInWishlist(self, request):
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
