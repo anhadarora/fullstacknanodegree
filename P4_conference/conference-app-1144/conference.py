@@ -49,6 +49,9 @@ from settings import ANDROID_AUDIENCE
 
 from utils import getUserId
 import logging
+logging.getLogger().setLevel(logging.DEBUG)
+
+
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
@@ -116,7 +119,7 @@ SESSION_POST_REQUEST = endpoints.ResourceContainer(
 
 WISH_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
-    websafeConferenceKey=messages.StringField(1),
+    websafeSessionKey=messages.StringField(1),
 )
 
 WISH_POST_REQUEST = endpoints.ResourceContainer(
@@ -494,26 +497,35 @@ class ConferenceApi(remote.Service):
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
-    @endpoints.method(WISH_POST_REQUEST, StringMessage,
+    @endpoints.method(WISH_POST_REQUEST, SessionForm,
                       path='conference/session/{websafeSessionKey}/wishlist/add', # necessarily want to add the websafeConferenceKey and websadesessionkey in the url here??
                       http_method='POST',
                       name='addSessionToWishlist')
     def addSessionToWishlist(self, request):
-     # -- adds the session to the user's list of sessions they are interested in attending decided that wishlist is open to all conferences so user can use as a bookmarking function 
-
-        user = self._getProfileFromUser()
+        """Adds a session to current user's wishlist"""
+        user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
 
-        # query by user key as the ancestor
-        p_key = user.key
-        prof = p_key.get()
+        # get and check session
+        session = ndb.Key(urlsafe=request.websafeSessionKey).get()
+        if not session:
+            raise endpoints.NotFoundException(
+                'No session found with key: %s' % request.websafeSessionKey)
 
-        if prof and prof.sessKeyWishlist:
-            prof.sessKeyWishlist.append(websafeSessionKey)
-        else:
-            raise endpoints.NotFoundException('Registration required')
+        # get profile
+        prof = self._getProfileFromUser()
+
+        # check if session in wishlist
+        if session.key in prof.sessKeyWishlist:
+            raise endpoints.BadRequestException(
+                'Session already saved to wishlist: %s' % request.websafeSessionKey)
+
+        # append to user profile's wishlist
+        prof.sessKeyWishlist.append(session.key)
         prof.put()
+
+        return self._copySessionToForm(session)
 
 
     # @endpoints.method(message_types.VoidMessage, SessionForms,

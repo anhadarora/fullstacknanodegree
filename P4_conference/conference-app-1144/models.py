@@ -21,13 +21,54 @@ class ConflictException(endpoints.ServiceException):
     """ConflictException -- exception mapped to HTTP 409 response"""
     http_status = httplib.CONFLICT
 
+# Task 1 models ---------
+# needs to come before Profile class because of Session to add to wishlist
+class Session(ndb.Model):
+    """Session -- Session object"""
+    sessionName     = ndb.StringProperty(required=True)
+    highlights      = ndb.StringProperty(repeated=True)
+    speaker         = ndb.StringProperty(required=True)
+    duration        = ndb.IntegerProperty()
+    typeOfSession   = ndb.StringProperty() # use enum?
+    date            = ndb.IntegerProperty()
+    startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
+    organizerUserId = ndb.StringProperty()
+
+# defines input parameters for _createSessionObject
+class SessionForm(messages.Message):
+    """SessionForm -- Session outbound form message"""
+    sessionName          = messages.StringField(1)
+    highlights           = messages.StringField(2, repeated=True)
+    speaker              = messages.StringField(3)
+    duration             = messages.IntegerField(4, variant=messages.Variant.INT32)
+    typeOfSession        = messages.StringField(5) # use enum?
+    date                 = messages.IntegerField(6, variant=messages.Variant.INT32) # DateTimeField()
+    startTime            = messages.IntegerField(7, variant=messages.Variant.INT32) # DateTimeField()
+    organizerUserId = messages.StringField(8)
+    websafeSessionKey = messages.StringField(9)
+    websafeConferenceKey    = messages.StringField(10)
+
+class SessionForms(messages.Message):
+    """SessionForms -- multiple Session outbound form message"""
+    items = messages.MessageField(SessionForm, 1, repeated=True)
+
+
+class SessionQueryForm(messages.Message):
+    """SessionQueryForm -- Session query inbound form message"""
+    field = messages.StringField(1)
+    operator = messages.StringField(2)
+    value = messages.StringField(3)
+
+class SessionQueryForms(messages.Message):
+    """ConferenceQueryForms -- multiple SessionQueryForm inbound form message"""
+    filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
 class Profile(ndb.Model):
     """Profile -- User profile object"""
     displayName = ndb.StringProperty()
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
-    sessKeyWishlist = ndb.StringProperty(repeated=True)
+    sessKeyWishlist = ndb.KeyProperty(Session, repeated=True)
 
 # only editable by users
 class ProfileMiniForm(messages.Message):
@@ -62,6 +103,10 @@ class Conference(ndb.Model):
     endDate         = ndb.DateProperty()
     maxAttendees    = ndb.IntegerProperty()
     seatsAvailable  = ndb.IntegerProperty()
+
+    @property
+    def sessions(self):
+        return Session.query(ancestor=self.key)
 
 class ConferenceForm(messages.Message):
     """ConferenceForm -- Conference outbound form message"""
@@ -112,44 +157,5 @@ class ConferenceQueryForms(messages.Message):
 
 
 
-# Task 1 models ---------
-class Session(ndb.Model):
-    """Session -- Session object"""
-    sessionName     = ndb.StringProperty(required=True)
-    highlights      = ndb.StringProperty(repeated=True)
-    speaker         = ndb.StringProperty(required=True)
-    duration        = ndb.IntegerProperty()
-    typeOfSession   = ndb.StringProperty() # use enum?
-    date            = ndb.IntegerProperty()
-    startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
-    organizerUserId = ndb.StringProperty()
 
-# defines input parameters for _createSessionObject
-class SessionForm(messages.Message):
-    """SessionForm -- Session outbound form message"""
-    sessionName          = messages.StringField(1)
-    highlights           = messages.StringField(2, repeated=True)
-    speaker              = messages.StringField(3)
-    duration             = messages.IntegerField(4, variant=messages.Variant.INT32)
-    typeOfSession        = messages.StringField(5) # use enum?
-    date                 = messages.IntegerField(6, variant=messages.Variant.INT32) # DateTimeField()
-    startTime            = messages.IntegerField(7, variant=messages.Variant.INT32) # DateTimeField()
-    organizerUserId = messages.StringField(8)
-    websafeSessionKey = messages.StringField(9)
-    websafeConferenceKey    = messages.StringField(10)
-
-class SessionForms(messages.Message):
-    """SessionForms -- multiple Session outbound form message"""
-    items = messages.MessageField(SessionForm, 1, repeated=True)
-
-
-class SessionQueryForm(messages.Message):
-    """SessionQueryForm -- Session query inbound form message"""
-    field = messages.StringField(1)
-    operator = messages.StringField(2)
-    value = messages.StringField(3)
-
-class SessionQueryForms(messages.Message):
-    """ConferenceQueryForms -- multiple SessionQueryForm inbound form message"""
-    filters = messages.MessageField(SessionQueryForm, 1, repeated=True)
 
