@@ -474,25 +474,44 @@ class ConferenceApi(remote.Service):
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
 
 
-
-
-
-
-
-
-
     @endpoints.method(SESSION_GET_REQUEST, SessionForms,
                       path='sessions/{websafeConferenceKey}/{typeOfSession}',
                       http_method='GET', 
                       name='getConferenceSessionsByType')
     def getConferenceSessionsByType(self, request):
-        """get all Sessions of a particular type for a particular Conference"""
-        # return key for conference
-        conf_key = ndb.Key(urlsafe=request.websafeConferenceKey).get().key
-        # query for sessions with this conference as ancestor
-        sessions = Session.query(Session.types==request.typeOfsession, ancestor=conf_key)
-        # return set of SessionForm objects per Speaker
+        """Return requested session (by session type)"""
+
+         # copy ConferenceForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
+        typeOfSession = data['typeOfSession']
+
+        # get and check conf exists
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+
+        # query for sessions with this conference as ancestor and with equality filter on typeOfSession
+        sessions = Session.query(Session.typeOfSession == typeOfSession, ancestor=ndb.Key(Conference, conf.key.id()))
+        # return set of SessionForm objects for conference
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
+
+    @endpoints.method(SESSION_GET_REQUEST, SessionForms,
+                      path='sessions/{speaker}',
+                      http_method='GET', 
+                      name='getConferenceSessionsBySpeaker')
+    def getSessionsBySpeaker(self, request):
+        """Return requested sessions (by speaker)"""
+         # copy SessionForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
+        speaker = data['speaker']
+
+        # query for sessions with this speaker as a match
+        sessions = Session.query(Session.speaker == speaker)
+        # return set of SessionForm objects for conference
+        return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
 
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
