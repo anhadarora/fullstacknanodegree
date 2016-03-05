@@ -16,6 +16,8 @@ import webapp2
 from google.appengine.api import app_identity
 from google.appengine.api import mail
 from conference import ConferenceApi
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
 
 class SetAnnouncementHandler(webapp2.RequestHandler):
     def get(self):
@@ -37,8 +39,21 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
                 'conferenceInfo')
         )
 
+# https://github.com/apeabody/P4/blob/master/main.py
+class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
+    print '****MARKER FOR setfeaturedspeakerhandler TASKQUE CALL'
+    def post(self):
+        """Check and Set Featured Speaker """
+        C_API = ConferenceApi()
+        featured_speaker = self.request.get('speaker')
+        logging.debug("**** MARKER for featured_speaker", featured_speaker[0])
+        websafeConferenceKey = self.request.get('websafeConferenceKey')
+        logging.debug("**** MARKER for conf key ", websafeConferenceKey)
+        C_API._setFeaturedSpeaker(featured_speaker, websafeConferenceKey)
+
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
     ('/tasks/send_confirmation_email', SendConfirmationEmailHandler),
+    ('/tasks/set_featured_speaker', SetFeaturedSpeakerHandler)
 ], debug=True)
