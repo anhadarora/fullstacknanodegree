@@ -34,9 +34,9 @@ handlers:       # static then dynamic
   script: main.app
 
 # Task 4
-- url: /tasks/cache_sessions
+- url: /tasks/set_featured_speaker
   script: main.app
-  login: admin
+  # login: admin
 
 - url: /crons/set_announcement
   script: main.app
