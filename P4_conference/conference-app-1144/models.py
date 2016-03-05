@@ -157,6 +157,9 @@ class ConferenceQueryForms(messages.Message):
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 
-
+class SpeakerForm(messages.Message):
+    """SpeakerForm -- Speaker outbound form message"""
+    speaker                 = messages.StringField(1)
+    sessionNames            = messages.StringField(2, repeated=True)
 
 
