@@ -59,6 +59,7 @@ ANNOUNCEMENT_TPL = ('Last chance to attend! The following conferences '
                     'are nearly sold out: %s')
 # Set MEMCACHE key to FEATURED SPEAKER
 MEMCACHE_FEATURED_SPEAKER = "FEATURED_SPEAKER"
+FEATURED_SPEAKER_TPL = ("Our Featured speaker is %s. For sessions: ")
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -511,9 +512,10 @@ class ConferenceApi(remote.Service):
     # Sets a memcache key to speaker
     def _setFeaturedSpeaker(self, featured_speaker, websafeConferenceKey):
         # Get Session Names associated with featured speaker
-        sessions = Session.query(
-            ancestor=(ndb.Key(urlsafe=websafeConferenceKey))).fetch(projection=[Session.speaker])
-        sessions.filter(Session.speaker == featured_speaker)
+        # conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+
+        sessions = Session.query(Session.speaker == featured_speaker, 
+            ancestor=ndb.Key(urlsafe=websafeConferenceKey))
 
         #TODO NEED TO FIGURE OUT HOW TO ITERATE THROUGH SESSIONS AND PULL OUT SPEAKER
         print "Our Featured speaker is %s. For sessions: " % featured_speaker
@@ -522,7 +524,7 @@ class ConferenceApi(remote.Service):
         memcache_msg = "Our Featured speaker is %s. For sessions: " % featured_speaker
 
         for sess in sessions:
-            memcache_msg += str(sess.name) + ", "
+            memcache_msg += str(sess.sessionName) + ", "
 
         # Set memcache key
         memcache.set(MEMCACHE_FEATURED_SPEAKER, memcache_msg)

@@ -19,6 +19,10 @@ from conference import ConferenceApi
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
+
+MEMCACHE_FEATURED_SPEAKER = "FEATURED SPEAKER"
+FEATURED_SPEAKER_TPL = ('Featured Speaker %s is presenting %s')
+
 class SetAnnouncementHandler(webapp2.RequestHandler):
     def get(self):
         """Set Announcement in Memcache."""
@@ -46,11 +50,28 @@ class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
         """Check and Set Featured Speaker """
         C_API = ConferenceApi()
         featured_speaker = self.request.get('speaker')
-        logging.debug("**** MARKER for featured_speaker", featured_speaker[0])
+        logging.debug("**** MARKER for featured_speaker", featured_speaker)
+
         websafeConferenceKey = self.request.get('websafeConferenceKey')
         logging.debug("**** MARKER for conf key ", websafeConferenceKey)
+
         C_API._setFeaturedSpeaker(featured_speaker, websafeConferenceKey)
 
+        # ORRRR
+#         spkr = self.request.get('speaker')
+#         # Gather all sessions by this speaker
+#         fsessions = Session.query(Session.speaker==str(speaker))\
+#             .fetch(projection=[Session.sessionName])
+#         #If more than 1 session, then make featured speaker
+#         if len(fsessions) > 1:
+#             # Lookup Speaker
+#             speaker = Speaker.get_by_id(int(spkr),)
+#             # Set the featured speaker and sessions in memcache
+#             announcement = FEATURED_SPEAKER_TPL % (speaker.name,
+#                 ', '.join(session.sessionName for session in fsessions))
+#             memcache.set(MEMCACHE_FEATURED_SPEAKER, announcement)
+
+# NameError: global name 'Session' is not defined
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
