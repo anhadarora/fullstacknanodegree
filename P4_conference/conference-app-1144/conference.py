@@ -13,7 +13,8 @@ created by wesc on 2014 apr 21
 __author__ = 'wesc+api@google.com (Wesley Chun)'
 
 
-from datetime import datetime
+from datetime import datetime, timedelta, time as timed
+import time
 
 import endpoints
 from protorpc import messages
@@ -382,7 +383,7 @@ class ConferenceApi(remote.Service):
         for field in sf.all_fields():
             if hasattr(sesh, field.name):
                 # convert Date to date string; just copy others
-                if field.name.endswith('Date'):
+                if field.name in ['startTime', 'date']:
                     setattr(sf, field.name, str(getattr(sesh, field.name)))
                 else:
                     setattr(sf, field.name, getattr(sesh, field.name))
@@ -427,6 +428,11 @@ class ConferenceApi(remote.Service):
         # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
+
+        # convert time from strings to Time object (date-independent)
+        if data['startTime']:
+            data['startTime'] = datetime.strptime(data['startTime'][:5], "%H:%M").time()
+
         # converts type of session to string (TODO set as dropdown menu)
         if data['typeOfSession']:
             data['typeOfSession'] = str(data['typeOfSession'])
@@ -512,7 +518,8 @@ class ConferenceApi(remote.Service):
 # - - - Speaker Functions - - - - - - - - - - - - - - - - - - -
 
     # Sets a memcache key to speaker
-    def _setFeaturedSpeaker(self, featured_speaker, websafeConferenceKey):
+    @staticmethod
+    def _setFeaturedSpeaker(featured_speaker, websafeConferenceKey):
         # Get Session Names associated with featured speaker
         # conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
 
@@ -521,7 +528,7 @@ class ConferenceApi(remote.Service):
 
         #TODO NEED TO FIGURE OUT HOW TO ITERATE THROUGH SESSIONS AND PULL OUT SPEAKER
         print "Our Featured speaker is %s. For sessions: " % featured_speaker
-        logging.debug("**** MARKER ???")
+
         # Create message
         memcache_msg = "Our Featured speaker is %s. For sessions: " % featured_speaker
 
@@ -916,20 +923,19 @@ class ConferenceApi(remote.Service):
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
 
 
-
-    @endpoints.method(message_types.VoidMessage, SessionForms, path='sessions/getSessionsByTypeTime/',
-            http_method='GET', name='getSessionsByTypeTime')
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+                      path='sessions/getSessionsByTypeTime',
+                      http_method='GET', name='getSessionsByTypeTime')
     def getSessionsByTypeTime(self, request):
-    """Returns all non workshop sessions helf before 7 pm. """
+        """Returns all non workshop sessions held before 7 pm. """
 
         sessions = Session.query(ndb.AND(
-                Session.startTime != None,
-                Session.startTime <= timed(hour=19)
-                ))
+                   Session.startTime != None,
+                   Session.startTime <= timed(hour=19)))
 
         filtered_sessions = []
         for session in sessions:
-            if 'workshop' in session.typeOfSession:
+            if 'workshop' == session.typeOfSession:
                 continue
             else:
                 filtered_sessions.append(session)
