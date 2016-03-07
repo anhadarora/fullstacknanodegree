@@ -74,7 +74,6 @@ DEFAULTS = {
 }
 SESHDEFAULTS = {
     "duration": 0,
-    "startTime": 0,
     "highlights": [ "Default", "Highlights" ],
 }
 OPERATORS = {
@@ -910,7 +909,7 @@ class ConferenceApi(remote.Service):
 
 # - - - Other Query Functions - - - - - - - - - - - - - - - - - - - -
 
-    @endpoints.method(SESSION_GET_REQUEST, SessionForms,
+    @endpoints.method(message_types.VoidMessage, SessionForms,
                       path='sessions/past',
                       http_method='GET',
                       name='getPastSessions')
