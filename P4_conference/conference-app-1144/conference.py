@@ -41,6 +41,8 @@ from models import SessionForm
 from models import SessionForms
 from models import SessionQueryForm
 from models import SessionQueryForms
+from models import SocialForm
+from models import SocialForms
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -59,7 +61,7 @@ ANNOUNCEMENT_TPL = ('Last chance to attend! The following conferences '
                     'are nearly sold out: %s')
 # Set MEMCACHE key to FEATURED SPEAKER
 MEMCACHE_FEATURED_SPEAKER = "FEATURED_SPEAKER"
-FEATURED_SPEAKER_TPL = ("Our Featured speaker is %s. For sessions: ")
+FEATURED_SPEAKER_TPL = ("Our featured speaker is %s. For sessions: ")
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -556,9 +558,6 @@ class ConferenceApi(remote.Service):
 
 
 
-
-
-
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
     @endpoints.method(WISH_POST_REQUEST, SessionForm,
@@ -857,6 +856,40 @@ class ConferenceApi(remote.Service):
         return ConferenceForms(
             items=[self._copyConferenceToForm(conf, "") for conf in q]
         )
+
+
+# - - - Social Feed Query Functions - - - - - - - - - - - - - - - - - - - -
+
+    @endpoints.method(SocialForm, SocialForms,
+            path='conference/{websafeConferenceKey}/socialfeed',
+            http_method='POST', name='getSocialFeed')
+    def getSocialFeed(self, request):
+        # fetch existing conference
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeKey)
+
+        #fetch user
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
+
+        logging.debug('*******MARKER FOR USER_ID RETRIEVAL')
+        # pull up other users of that conference (query by kind, filter by property)
+        profiles = Profile.query()
+        # set equality filter and where conf exists in user's conferenceKeysToAttend
+        profiles.filter(Profile.conferenceKeysToAttend == conf)
+        logging.debug('*******MARKER FOR PROFILE LIST QUERY')
+
+        # return other users of that conference
+        # return SocialForms(
+        # items=[self._copyProfileToForm(prof) for prof in profiles])
+# ORRRRRRR
+
+        return SocialForms(
+        items=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in profiles])
 
 
 api = endpoints.api_server([ConferenceApi]) # register API
