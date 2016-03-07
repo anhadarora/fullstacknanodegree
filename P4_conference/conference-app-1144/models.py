@@ -30,8 +30,8 @@ class Session(ndb.Model):
     speaker         = ndb.StringProperty(required=True)
     duration        = ndb.IntegerProperty()
     typeOfSession   = ndb.StringProperty() # use enum?
-    date            = ndb.IntegerProperty()
-    startTime       = ndb.IntegerProperty() # in 24 hr notation so it can be ordered
+    date            = ndb.DateProperty()
+    startTime       = ndb.TimeProperty() # in 24 hr notation so it can be ordered
     organizerUserId = ndb.StringProperty()
 
 # defines input parameters for _createSessionObject
@@ -42,8 +42,8 @@ class SessionForm(messages.Message):
     speaker              = messages.StringField(3)
     duration             = messages.IntegerField(4, variant=messages.Variant.INT32)
     typeOfSession        = messages.StringField(5) # use enum?
-    date                 = messages.IntegerField(6, variant=messages.Variant.INT32) # DateTimeField()
-    startTime            = messages.IntegerField(7, variant=messages.Variant.INT32) # DateTimeField()
+    date                 = messages.StringField(6) # DateField()
+    startTime            = messages.StringField(7) # TimeField()
     organizerUserId = messages.StringField(8)
     websafeSessionKey = messages.StringField(9)
     websafeConferenceKey    = messages.StringField(10)
