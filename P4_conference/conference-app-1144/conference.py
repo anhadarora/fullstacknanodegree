@@ -917,4 +917,25 @@ class ConferenceApi(remote.Service):
 
 
 
+    @endpoints.method(message_types.VoidMessage, SessionForms, path='sessions/getSessionsByTypeTime/',
+            http_method='GET', name='getSessionsByTypeTime')
+    def getSessionsByTypeTime(self, request):
+    """Returns all non workshop sessions helf before 7 pm. """
+
+        sessions = Session.query(ndb.AND(
+                Session.startTime != None,
+                Session.startTime <= timed(hour=19)
+                ))
+
+        filtered_sessions = []
+        for session in sessions:
+            if 'workshop' in session.typeOfSession:
+                continue
+            else:
+                filtered_sessions.append(session)
+
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in filtered_sessions]
+        )
+
 api = endpoints.api_server([ConferenceApi]) # register API
