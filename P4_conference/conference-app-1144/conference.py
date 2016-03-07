@@ -876,11 +876,21 @@ class ConferenceApi(remote.Service):
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = getUserId(user)
 
-        logging.debug('*******MARKER FOR USER_ID RETRIEVAL')
         # pull up other users of that conference (query by kind, filter by property)
         profiles = Profile.query()
-        # set equality filter and where conf exists in user's conferenceKeysToAttend
-        profiles.filter(Profile.conferenceKeysToAttend == conf)
+        # iterate through conferencestoattend array 
+        attendant_keys = []
+        for prof in profiles:
+            for c in profiles.conferenceKeysToAttend:
+                if c == conf:
+                    attendant_keys.append(prof.key)
+
+
+        # get final list of attendants
+        attendants = ndb.get_multi(attendant_keys)
+
+        # # set equality filter and where conf exists in user's conferenceKeysToAttend
+        # profiles.filter(Profile.conferenceKeysToAttend == conf)
         logging.debug('*******MARKER FOR PROFILE LIST QUERY')
 
         # return other users of that conference
@@ -889,7 +899,22 @@ class ConferenceApi(remote.Service):
 # ORRRRRRR
 
         return SocialForms(
-        items=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in profiles])
+        items=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in attendants])
+
+# - - - Other Query Functions - - - - - - - - - - - - - - - - - - - -
+
+    @endpoints.method(SESSION_GET_REQUEST, SessionForms,
+                      path='sessions/past',
+                      http_method='GET',
+                      name='getPastSessions')
+    def getPastSessions(self, request):
+        """Return sessions that have occurred in the past."""
+        # copy SessionForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
+        sessions = Session.query(Session.date < datetime.now()).fetch()
+        # return set of SessionForm objects for conference
+        return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
 
 
 api = endpoints.api_server([ConferenceApi]) # register API
