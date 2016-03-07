@@ -162,4 +162,13 @@ class SpeakerForm(messages.Message):
     speaker                 = messages.StringField(1)
     sessionNames            = messages.StringField(2, repeated=True)
 
+class SocialForm(messages.Message):
+    """ProfileFeedForm -- Social Feed inbound/outbound form message"""
+    displayName = messages.StringField(1)
+    conferenceKeysToAttend = messages.StringField(2, repeated=True)
+    websafeConferenceKey = messages.StringField(3)
+
+class SocialForms(messages.Message):
+    """ConferenceForms -- multiple Conference outbound form message"""
+    socialList = messages.MessageField(SocialForm, 1, repeated=True)
 
