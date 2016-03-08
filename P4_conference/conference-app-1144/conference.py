@@ -450,10 +450,18 @@ class ConferenceApi(remote.Service):
 
         Session(**data).put()
 
+        speaker = Session.speaker
+
+        logging.debug(speaker)
+        print 'SPEAKERRRRRRRR: '
+        print speaker
+        print 'REQUEST.SPEAKERRR: '
+        print request.speaker
+        spkr = request.speaker
         # Task 4:
         # If number of sessions greater than one set featured speaker
         if len(data['speaker']) > 0:
-            for spkr in data['speaker']:
+            # for spkr in data['speaker']:
                 taskqueue.add(
                     params={'speaker': spkr,
                             'websafeConferenceKey': request.websafeConferenceKey},
@@ -610,42 +618,41 @@ class ConferenceApi(remote.Service):
         s_keys = prof.sessKeyWishlist
         sessions = [s_key.get() for s_key in s_keys]
 
-
         # return list of sessions
         return SessionForms(
-            items=[self._copySessionToForm(session) for session in sessions]
-        )
+            items=[self._copySessionToForm(session) for session in sessions])
 
 
-#TO DO NEED TO FIGURE OUT HOW TO DELETE
-    # @endpoints.method(WISH_POST_REQUEST, SessionForm, 
-    #         path='conference/{websafeSessionKey}/wishlist/delete,
-    #         http_method='POST', name='deleteSessionInWishlist')
-    # def deleteSessionInWishlist(self, request):
-    #     """Deletes session in wishlist."""
+    @endpoints.method(WISH_POST_REQUEST, SessionForm,
+                      path='conference/session/{websafeSessionKey}/wishlist/delete', # necessarily want to add the websafeConferenceKey and websadesessionkey in the url here??
+                      http_method='POST',
+                      name='deleteSessionInWishlist')
+    def delete_session_from_wishlist(self, request):
+        """Removes session from user's wishlist"""
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
 
-    #     user = endpoints.get_current_user()
-    #     if not user:
-    #         raise endpoints.UnauthorizedException('Authorization required')
+        # get and check session
+        session = ndb.Key(urlsafe=request.websafeSessionKey).get()
+        if not session:
+            raise endpoints.NotFoundException(
+                'No session found with key: %s' % request.websafeSessionKey)
 
-    #     # get and check session
-    #     session = ndb.Key(urlsafe=request.websafeSessionKey).get()
-    #     if not session:
-    #         raise endpoints.NotFoundException(
-    #             'No session found with key: %s' % request.websafeSessionKey)
-    #     # get profile
-    #     prof = self._getProfileFromUser()
+        # get profile
+        prof = self._getProfileFromUser()
 
-    #     # check if session in wishlist
-    #     if session.key in prof.sessKeyWishlist:
-    #         raise endpoints.BadRequestException(
-    #             'Session not in wishlist: %s' % request.websafeSessionKey)
+        # check if session in wishlist
+        if session.key not in prof.sessKeyWishlist:
+            raise endpoints.BadRequestException(
+                'Session not in wishlist: %s' % request.websafeSessionKey)
 
-    #     # append to user profile's wishlist
-    #     prof.sessKeyWishlist.pop(session.key)
-    #     prof.put()
+        # delete from user profile's wishlist 
+        prof.sessKeyWishlist.remove(session.key)
+        prof.put()
 
-    #     return self._copySessionToForm(session)
+        return self._copySessionToForm(session)
+
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
     def _copyProfileToForm(self, prof):
@@ -883,21 +890,26 @@ class ConferenceApi(remote.Service):
         user_id = getUserId(user)
 
         # pull up other users of that conference (query by kind, filter by property)
-        profiles = Profile.query()
+        profiles = Profile.all()
+
+        logging.debug(profiles)
+
         # iterate through conferencestoattend array 
         attendant_keys = []
         for prof in profiles:
-            for c in profiles.conferenceKeysToAttend:
+            for c in prof.conferenceKeysToAttend:
                 if c == conf:
                     attendant_keys.append(prof.key)
 
-
+        logging.debug(attendant_keys)
+        
         # get final list of attendants
         attendants = ndb.get_multi(attendant_keys)
 
         # # set equality filter and where conf exists in user's conferenceKeysToAttend
         # profiles.filter(Profile.conferenceKeysToAttend == conf)
         logging.debug('*******MARKER FOR PROFILE LIST QUERY')
+        logging.debug(attendants)
 
         # return other users of that conference
         # return SocialForms(
@@ -905,7 +917,7 @@ class ConferenceApi(remote.Service):
 # ORRRRRRR
 
         return SocialForms(
-        items=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in attendants])
+        socialList=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in attendants])
 
 # - - - Other Query Functions - - - - - - - - - - - - - - - - - - - -
 
