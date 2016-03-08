@@ -50,10 +50,12 @@ class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
         """Check and Set Featured Speaker """
         C_API = ConferenceApi()
         featured_speaker = self.request.get('speaker')
-        logging.debug("**** MARKER for featured_speaker", featured_speaker)
+
+        logging.debug(featured_speaker)
+        print featured_speaker
 
         websafeConferenceKey = self.request.get('websafeConferenceKey')
-        logging.debug("**** MARKER for conf key ", websafeConferenceKey)
+
         C_API._setFeaturedSpeaker(featured_speaker, websafeConferenceKey)
 
 
