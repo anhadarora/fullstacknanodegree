@@ -56,7 +56,8 @@ I created sessions as a separate 'kind' object to store different entities with 
 
 Sessions were created with a parent conference key, and created to ensure that the user creating the session is the organizer of the parent conference. 
 
-__Task 2: Add Sessions to User Wishlist__
+__Task 2: Add Sessions to User Wishlist__  
+Users can add, retrieve, and delete sessions from their wishlist.
 
 __Task 3: Work on indexes and queries__
 
@@ -65,20 +66,21 @@ __Task 3: Work on indexes and queries__
 
 3.2 - Come up with two additional queries  
 
-*3.2.1 - Query other attendees of a conference: provides a socialfeed list of other attendees registered to a conference that user is registered to.*  
-`def getSocialFeed`  
-*3.2.2 - Query past sessions: does exactly that*  
-`def getPastSessions`  
+*3.2.1 - Query sessions held today: useful for seeing a daily agenda for a user.*  
+`getSessionsToday`  
+*3.2.2 - Query past sessions: useful to see past sessions, and to be used in follow-on function to delete past sessions*  
+`getPastSessions`  
 
-3.3 - Solve the following 'non-workshop', 'before 7 pm' query problem
+3.3 - Solve the following 'non-workshop', 'before 7 pm' query problem  
 *This query requires an inequality filter on two properties, and datastore only supports inequality filtering on a single property (not multiple properties)*
 
 *One possible solution is to break this into two datastore queries, first filtering the session by type, populating an array of keys, and then querying this array of keys to match time before 7 pm.*
 
 *Another possible solution (the solution I implemented) would be to query sessions before 7, and then remove the sessions where 'typeOfSession == 'workshop''. I chose this implementation due to less processing steps than the first solution proposed (which would be inefficient with large datasets.)*  
-`def getSessionsByTypeTime`
-__Task 4: Add a Task__
+`getSessionsByTypeTime`  
 
+__Task 4: Add a Task__  
+When a new session is added to a conference, the speaker is checked. If there is more than one session by this speaker at this conference, a new Memcache entry is added that features the speaker and session names. The logic is handled using App Engine's Task Queue.
 
 ### Resources
 

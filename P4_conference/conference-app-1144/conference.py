@@ -871,53 +871,6 @@ class ConferenceApi(remote.Service):
         )
 
 
-# - - - Social Feed Query Functions - - - - - - - - - - - - - - - - - - - -
-
-    @endpoints.method(SocialForm, SocialForms,
-            path='conference/{websafeConferenceKey}/socialfeed',
-            http_method='POST', name='getSocialFeed')
-    def getSocialFeed(self, request):
-        # fetch existing conference
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % request.websafeKey)
-
-        #fetch user
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id = getUserId(user)
-
-        # pull up other users of that conference (query by kind, filter by property)
-        profiles = Profile.all()
-
-        logging.debug(profiles)
-
-        # iterate through conferencestoattend array 
-        attendant_keys = []
-        for prof in profiles:
-            for c in prof.conferenceKeysToAttend:
-                if c == conf:
-                    attendant_keys.append(prof.key)
-
-        logging.debug(attendant_keys)
-        
-        # get final list of attendants
-        attendants = ndb.get_multi(attendant_keys)
-
-        # # set equality filter and where conf exists in user's conferenceKeysToAttend
-        # profiles.filter(Profile.conferenceKeysToAttend == conf)
-        logging.debug('*******MARKER FOR PROFILE LIST QUERY')
-        logging.debug(attendants)
-
-        # return other users of that conference
-        # return SocialForms(
-        # items=[self._copyProfileToForm(prof) for prof in profiles])
-# ORRRRRRR
-
-        return SocialForms(
-        socialList=[self._copyProfileToForm(getattr(prof, 'displayName')) for prof in attendants])
 
 # - - - Other Query Functions - - - - - - - - - - - - - - - - - - - -
 
@@ -930,6 +883,19 @@ class ConferenceApi(remote.Service):
         # copy SessionForm/ProtoRPC Message into dict
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
         sessions = Session.query(Session.date < datetime.now()).fetch()
+        # return set of SessionForm objects for conference
+        return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
+
+
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+                      path='sessions/today',
+                      http_method='GET',
+                      name='getSessionsToday')
+    def getSessionsToday(self, request):
+        """Return sessions for today."""
+        # copy SessionForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
+        sessions = Session.query(Session.date == datetime.now()).fetch()
         # return set of SessionForm objects for conference
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
 
