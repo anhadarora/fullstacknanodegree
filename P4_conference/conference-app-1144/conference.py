@@ -115,6 +115,7 @@ SESSION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1, required=True),
     typeOfSession=messages.StringField(2)
+    speaker=messages.StringField(3)
 )
 
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
@@ -437,7 +438,7 @@ class ConferenceApi(remote.Service):
             data['typeOfSession'] = str(data['typeOfSession'])
 
 
-        # generate Session Key based on Conference key and organizer(?)
+        # generate Session Key based on Conference key and organizer
         # ID based on Profile key get Conference key from ID
         c_key = ndb.Key(Conference, conf.key.id())
         s_id = Session.allocate_ids(size=1, parent=c_key)[0]
@@ -533,11 +534,8 @@ class ConferenceApi(remote.Service):
         sessions = Session.query(Session.speaker == featured_speaker, 
             ancestor=ndb.Key(urlsafe=websafeConferenceKey))
 
-        #TODO NEED TO FIGURE OUT HOW TO ITERATE THROUGH SESSIONS AND PULL OUT SPEAKER
-        print "Our Featured speaker is %s. For sessions: " % featured_speaker
-
         # Create message
-        memcache_msg = "Our Featured speaker is %s. For sessions: " % featured_speaker
+        memcache_msg = "Our featured speaker is %s. For sessions: " % featured_speaker
 
         for sess in sessions:
             memcache_msg += str(sess.sessionName) + ", "
