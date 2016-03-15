@@ -115,7 +115,11 @@ SESSION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1, required=True),
     typeOfSession=messages.StringField(2)
-    speaker=messages.StringField(3)
+)
+
+SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    speaker=messages.StringField(1, required=True),
 )
 
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
@@ -441,11 +445,12 @@ class ConferenceApi(remote.Service):
         # generate Session Key based on Conference key and organizer
         # ID based on Profile key get Conference key from ID
         c_key = ndb.Key(Conference, conf.key.id())
+        # may not be necessary, but chosing to keep separate session ID
         s_id = Session.allocate_ids(size=1, parent=c_key)[0]
         s_key = ndb.Key(Session, s_id, parent=c_key)
         data['key'] = s_key
         data['organizerUserId'] = request.organizerUserId = user_id
-        del data['websafeConferenceKey']
+        # del data['websafeConferenceKey'] (need this to set speaker below)
         # del data['websafeSessionkey'] (only need to put if updating?)
         # del data['organizerUserId']
 
@@ -467,7 +472,6 @@ class ConferenceApi(remote.Service):
                     params={'speaker': spkr,
                             'websafeConferenceKey': request.websafeConferenceKey},
                     url='/tasks/set_featured_speaker')
-
 
         return request
 
@@ -531,29 +535,35 @@ class ConferenceApi(remote.Service):
         # Get Session Names associated with featured speaker
         # conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
 
-        sessions = Session.query(Session.speaker == featured_speaker, 
-            ancestor=ndb.Key(urlsafe=websafeConferenceKey))
+        # option 1
+        # sessions = Session.query(Session.speaker == featured_speaker,
+        #                          ancestor=ndb.Key(urlsafe=websafeConferenceKey))
 
-        # Create message
-        memcache_msg = "Our featured speaker is %s. For sessions: " % featured_speaker
+        # option 2
+        # query filtering by speaker and confKey
+        sessions = Session.query(Session.speaker == featured_speaker)\
+                          .filter(Session.websafeConferenceKey == websafeConferenceKey)
 
-        for sess in sessions:
-            memcache_msg += str(sess.sessionName) + ", "
+        # use list comprehension to extract session names
+        spkr_sessions = [s.sessionName for s in sessions]
+
+        # format memcache message from global template var
+        memcache_msg = FEATURED_SPEAKER_TPL % featured_speaker + ', '.join(spkr_sessions)
+
+        # # alt option for joining session names
+        # for sess in sessions:
+        #     memcache_msg += str(sess.sessionName) + ", "
 
         # Set memcache key
         memcache.set(MEMCACHE_FEATURED_SPEAKER, memcache_msg)
 
 
-    @endpoints.method(SESSION_GET_REQUEST, SessionForms,
+    @endpoints.method(SPEAKER_GET_REQUEST, SessionForms,
                       path='sessions/speaker',
                       http_method='GET', 
                       name='getConferenceSessionsBySpeaker')
     def getSessionsBySpeaker(self, request):
         """Return requested sessions (by speaker)"""
-         # copy SessionForm/ProtoRPC Message into dict
-        data = {field.name: getattr(request, field.name) for field in request.all_fields()}
-        speaker = data['speaker']
-
         # query for sessions with this speaker as a match
         sessions = Session.query(Session.speaker == speaker)
         # return set of SessionForm objects for conference
@@ -567,7 +577,6 @@ class ConferenceApi(remote.Service):
     def getFeaturedSpeaker(self, request):
         """Return Featured Speaker from memcache."""
         return StringMessage(data=memcache.get(MEMCACHE_FEATURED_SPEAKER) or "")
-
 
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
