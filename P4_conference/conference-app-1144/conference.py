@@ -565,7 +565,7 @@ class ConferenceApi(remote.Service):
     def getSessionsBySpeaker(self, request):
         """Return requested sessions (by speaker)"""
         # query for sessions with this speaker as a match
-        sessions = Session.query(Session.speaker == speaker)
+        sessions = Session.query(Session.speaker == request.speaker)
         # return set of SessionForm objects for conference
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
 

@@ -9,6 +9,8 @@ Leafer's Conference deployed on App Engine is a project created by [Marie Leaf](
 * [Creator](#creator)
 * [Concepts](#concepts)
 * [Tasks](#Tasks)
+* [Resources](#Resources)
+* [Xtra Tips](#Xtra Tips)
 
 
 ## Products
@@ -89,3 +91,10 @@ When a new session is added to a conference, the speaker is checked. If there is
 https://cloud.google.com/appengine/docs/python/endpoints/create_api
 
 https://www.youtube.com/watch?v=uy0tP6_kWJ4
+
+### Xtra Tips
+
+To test API locally (so you dont have to debug through google server):
+in terminal: `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=test --unsafely-treat-insecure-origin-as-secure=http://localhost:8080`
+go to `http://localhost:8000/` - click on “default” to see web UI
+go to l`ocalhost:8080/_ah/api/explorer` - to see api explorer
