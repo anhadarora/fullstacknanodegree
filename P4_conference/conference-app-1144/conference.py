@@ -31,17 +31,25 @@ from models import ProfileMiniForm
 from models import ProfileForm
 from models import StringMessage
 from models import BooleanMessage
+
 from models import Conference
 from models import ConferenceForm
 from models import ConferenceForms
 from models import ConferenceQueryForm
 from models import ConferenceQueryForms
 from models import TeeShirtSize
+
 from models import Session
 from models import SessionForm
 from models import SessionForms
 from models import SessionQueryForm
 from models import SessionQueryForms
+
+from models import Speaker
+from models import SpeakerForm
+from models import SpeakerMiniForm
+from models import SpeakerList
+
 from models import SocialForm
 from models import SocialForms
 
@@ -254,13 +262,11 @@ class ConferenceApi(remote.Service):
         prof = ndb.Key(Profile, user_id).get()
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
 
-
     @endpoints.method(ConferenceForm, ConferenceForm, path='conference',
             http_method='POST', name='createConference')
     def createConference(self, request):
         """Create new conference."""
         return self._createConferenceObject(request)
-
 
     @endpoints.method(CONF_POST_REQUEST, ConferenceForm,
             path='conference/{websafeConferenceKey}',
@@ -268,7 +274,6 @@ class ConferenceApi(remote.Service):
     def updateConference(self, request):
         """Update conference w/provided fields & return w/updated info."""
         return self._updateConferenceObject(request)
-
 
     @endpoints.method(CONF_GET_REQUEST, ConferenceForm,
             path='conference/{websafeConferenceKey}',
@@ -283,7 +288,6 @@ class ConferenceApi(remote.Service):
         prof = conf.key.parent().get()
         # return ConferenceForm
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
-
 
     @endpoints.method(message_types.VoidMessage, ConferenceForms,
             path='getConferencesCreated',
@@ -303,7 +307,6 @@ class ConferenceApi(remote.Service):
         return ConferenceForms(
             items=[self._copyConferenceToForm(conf, getattr(prof, 'displayName')) for conf in confs]
         )
-
 
     def _getQuery(self, request):
         """Return formatted query from the submitted filters."""
@@ -454,19 +457,46 @@ class ConferenceApi(remote.Service):
         # del data['websafeSessionkey'] (only need to put if updating?)
         # del data['organizerUserId']
 
-        Session(**data).put()
-
-        speaker = Session.speaker
-
+        # Session(**data).put()
+        speaker = request.speaker
         logging.debug(speaker)
-        print 'SPEAKERRRRRRRR: '
-        print speaker
-        print 'REQUEST.SPEAKERRR: '
-        print request.speaker
         spkr = request.speaker
+        logging.debug(spkr)
+
+        # get and check speaker
+        if data['speaker']:
+            sp_key = ndb.Key(Speaker,data['speaker']).get()
+            logging.debug("THIS IS WHERE THE SP_KEY SHOULD BE RETRIEVED:")
+            logging.debug(sp_key)
+            if not sp_key:
+                raise endpoints.NotFoundException(
+                    'No speaker "%s" found. Please first "addspeaker".' % data['speaker'])
+
+
+        sessKeys=getattr(sp_key, "sessionKeys")
+        logging.debug("THIS IS WHERE THE SESSKEYS SHOULD BE:")
+        logging.debug(sessKeys)
+        count=1
+        # determine how many sessions this speaker is presenting at this conference
+        if sessKeys:
+            for wskey in sessKeys:
+                if ndb.Key(urlsafe=wskey).parent()==c_key:
+                    logging.info("session id=%d"%ndb.Key(urlsafe=wskey).id())
+                    count+=1
+
+        # create Session
+        try:
+            Session(**data).put()
+            sp_key.sessionKeys.append(s_key.urlsafe())
+            sp_key.put()
+        except:
+            raise endpoints.BadRequestException("Database update failed")
+
+
+
         # Task 4:
         # If number of sessions greater than one set featured speaker
-        if len(data['speaker']) > 0:
+        if count >= 2:
             # for spkr in data['speaker']:
                 taskqueue.add(
                     params={'speaker': spkr,
@@ -498,7 +528,6 @@ class ConferenceApi(remote.Service):
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
-
         # query for sessions with this conference as ancestor
         sessions = Session.query(ancestor=ndb.Key(Conference, conf.key.id()))
         # return set of SessionForm objects for conference
@@ -507,7 +536,7 @@ class ConferenceApi(remote.Service):
 
     @endpoints.method(SESSION_GET_REQUEST, SessionForms,
                       path='sessions/{websafeConferenceKey}/{typeOfSession}',
-                      http_method='GET', 
+                      http_method='GET',
                       name='getConferenceSessionsByType')
     def getConferenceSessionsByType(self, request):
         """Return requested session (by session type)"""
@@ -527,40 +556,74 @@ class ConferenceApi(remote.Service):
         # return set of SessionForm objects for conference
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
 
-# - - - Speaker Functions - - - - - - - - - - - - - - - - - - -
+# - - - Speaker Object and Functions - - - - - - - - - - - - - - - - - - -
+    def _copySpeakerToForm(self, speaker):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        # copy relevant fields from Speaker to SpeakerFrom
+        spkr = SpeakerForm()
+        for field in spkr.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(spkr, field.name, getattr(speaker, field.name))
+        spkr.check_initialized()
+        return spkr
 
-    # Sets a memcache key to speaker
-    @staticmethod
-    def _setFeaturedSpeaker(featured_speaker, websafeConferenceKey):
-        # Get Session Names associated with featured speaker
-        # conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+    def _copySpeakerToMiniForm(self, speaker):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        # copy relevant fields from Speaker to SpeakerMiniForm
+        spkr = SpeakerMiniForm()
+        for field in spkr.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(spkr, field.name, getattr(speaker, field.name))
+        spkr.check_initialized()
+        return spkr
 
-        # option 1
-        # sessions = Session.query(Session.speaker == featured_speaker,
-        #                          ancestor=ndb.Key(urlsafe=websafeConferenceKey))
+    def _doSpeaker(self, request):
+        """Get, create or update speaker"""
+        sp_key = ndb.Key(Speaker,request.displayName)
+        speaker = sp_key.get()
+        # if speaker exists, process user-modifyable fields
+        if speaker:
+            for field in ('displayName', 'bio'):
+                if hasattr(request, field):
+                    val = getattr(request, field)
+                    if val:
+                        setattr(speaker, field, str(val))
+        # if speaker doesn't exist, create new speaker object
+        else:
+            speaker = Speaker(key=sp_key,
+                              displayName=request.displayName,
+                              mainEmail=request.mainEmail,
+                              bio=request.bio,
+                              sessionKeys= [])
+        # put the modified speaker to datastore
+        speaker.put()
 
-        # option 2
-        # query filtering by speaker and confKey
-        sessions = Session.query(Session.speaker == featured_speaker)\
-                          .filter(Session.websafeConferenceKey == websafeConferenceKey)
+        # return SpeakerForm
+        return self._copySpeakerToForm(speaker)
 
-        # use list comprehension to extract session names
-        spkr_sessions = [s.sessionName for s in sessions]
+    @endpoints.method(SpeakerForm, SpeakerForm,
+            path='speaker', http_method='GET', name='getSpeaker')
+    def getSpeaker(self, request):
+        """Return speaker info."""
+        return self._doSpeaker(request)
 
-        # format memcache message from global template var
-        memcache_msg = FEATURED_SPEAKER_TPL % featured_speaker + ', '.join(spkr_sessions)
+    @endpoints.method(message_types.VoidMessage, SpeakerList,
+            path='allspeakers', http_method='GET', name='getAllSpeaker')
+    def getAllSpeakers(self, request):
+        """Return list of speakers."""
+        speakers=Speaker.query().order(Speaker.displayName)
+        return SpeakerList(items=[self._copySpeakerToMiniForm(speaker) for speaker in speakers])
 
-        # # alt option for joining session names
-        # for sess in sessions:
-        #     memcache_msg += str(sess.sessionName) + ", "
-
-        # Set memcache key
-        memcache.set(MEMCACHE_FEATURED_SPEAKER, memcache_msg)
+    @endpoints.method(SpeakerForm, SpeakerForm,
+            path='addSpeaker', http_method='POST', name='addSpeaker')
+    def addSpeaker(self, request):
+        """Update & return user speaker."""
+        return self._doSpeaker(request)
 
 
     @endpoints.method(SPEAKER_GET_REQUEST, SessionForms,
                       path='sessions/speaker',
-                      http_method='GET', 
+                      http_method='GET',
                       name='getConferenceSessionsBySpeaker')
     def getSessionsBySpeaker(self, request):
         """Return requested sessions (by speaker)"""
@@ -568,16 +631,6 @@ class ConferenceApi(remote.Service):
         sessions = Session.query(Session.speaker == request.speaker)
         # return set of SessionForm objects for conference
         return SessionForms(items=[self._copySessionToForm(session) for session in sessions])
-
-
-
-    @endpoints.method(message_types.VoidMessage, StringMessage,
-            path='featuredspeaker/get',
-            http_method='GET', name='getFeaturedSpeaker')
-    def getFeaturedSpeaker(self, request):
-        """Return Featured Speaker from memcache."""
-        return StringMessage(data=memcache.get(MEMCACHE_FEATURED_SPEAKER) or "")
-
 
 # - - - Wishlist Functions - - - - - - - - - - - - - - - - - - -
 
@@ -654,7 +707,7 @@ class ConferenceApi(remote.Service):
             raise endpoints.BadRequestException(
                 'Session not in wishlist: %s' % request.websafeSessionKey)
 
-        # delete from user profile's wishlist 
+        # delete from user profile's wishlist
         prof.sessKeyWishlist.remove(session.key)
         prof.put()
 
@@ -765,6 +818,39 @@ class ConferenceApi(remote.Service):
     def getAnnouncement(self, request):
         """Return Announcement from memcache."""
         return StringMessage(data=memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY) or "")
+
+    # Sets a memcache key to speaker
+    @staticmethod
+    def _setFeaturedSpeaker(featured_speaker, websafeConferenceKey):
+        # option 1
+        # sessions = Session.query(Session.speaker == featured_speaker,
+        #                          ancestor=ndb.Key(urlsafe=websafeConferenceKey))
+
+        # option 2
+        # query filtering by speaker and confKey
+        sessions = Session.query(Session.speaker == featured_speaker)\
+                          .filter(Session.websafeConferenceKey == websafeConferenceKey)
+
+        # use list comprehension to extract session names
+        spkr_sessions = [s.sessionName for s in sessions]
+
+        # format memcache message from global template var
+        memcache_msg = FEATURED_SPEAKER_TPL % featured_speaker + ', '.join(spkr_sessions)
+
+        # # alt option for joining session names
+        # for sess in sessions:
+        #     memcache_msg += str(sess.sessionName) + ", "
+
+        # Set memcache key
+        memcache.set(MEMCACHE_FEATURED_SPEAKER, memcache_msg)
+
+
+    @endpoints.method(message_types.VoidMessage, StringMessage,
+            path='featuredspeaker/get',
+            http_method='GET', name='getFeaturedSpeaker')
+    def getFeaturedSpeaker(self, request):
+        """Return Featured Speaker from memcache."""
+        return StringMessage(data=memcache.get(MEMCACHE_FEATURED_SPEAKER) or "")
 
 
 # - - - Registration - - - - - - - - - - - - - - - - - - - -

@@ -33,6 +33,7 @@ class Session(ndb.Model):
     date            = ndb.DateProperty()
     startTime       = ndb.TimeProperty() # in 24 hr notation so it can be ordered
     organizerUserId = ndb.StringProperty()
+    websafeConferenceKey  = ndb.StringProperty()
 
 # defines input parameters for _createSessionObject
 class SessionForm(messages.Message):
@@ -46,7 +47,7 @@ class SessionForm(messages.Message):
     startTime            = messages.StringField(7) # TimeField()
     organizerUserId = messages.StringField(8)
     websafeSessionKey = messages.StringField(9)
-    websafeConferenceKey    = messages.StringField(10)
+    websafeConferenceKey  = messages.StringField(10)
 
 class SessionForms(messages.Message):
     """SessionForms -- multiple Session outbound form message"""
@@ -156,12 +157,6 @@ class ConferenceQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple ConferenceQueryForm inbound form message"""
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
-
-class SpeakerForm(messages.Message):
-    """SpeakerForm -- Speaker outbound form message"""
-    speaker                 = messages.StringField(1)
-    sessionNames            = messages.StringField(2, repeated=True)
-
 class SocialForm(messages.Message):
     """ProfileFeedForm -- Social Feed inbound/outbound form message"""
     displayName = messages.StringField(1)
@@ -172,3 +167,26 @@ class SocialForms(messages.Message):
     """ConferenceForms -- multiple Conference outbound form message"""
     socialList = messages.MessageField(SocialForm, 1, repeated=True)
 
+# NEWLY ADDED TO MODELS.PY - - - - - - - - - - - - - - - - - - - - - -
+class Speaker(ndb.Model):
+    """Speaker -- Speaker profile object"""
+    displayName = ndb.StringProperty(required=True)
+    mainEmail = ndb.StringProperty(required=True)
+    bio = ndb.TextProperty()
+    # sessionKeys = ndb.KeyProperty(Session, repeated=True)
+    sessionKeys = ndb.StringProperty(repeated=True)
+
+class SpeakerForm(messages.Message):
+    """SpeakerForm -- Speaker outbound form message"""
+    displayName = messages.StringField(1)
+    mainEmail = messages.StringField(2)
+    bio = messages.StringField(3)
+    sessionKeys = messages.StringField(4, repeated=True)
+
+class SpeakerMiniForm(messages.Message):
+    """SpeakerMiniForm -- Speaker outbound form message"""
+    displayName = messages.StringField(1)
+    mainEmail = messages.StringField(2)
+
+class SpeakerList(messages.Message):
+    items = messages.MessageField(SpeakerMiniForm, 1, repeated=True)
