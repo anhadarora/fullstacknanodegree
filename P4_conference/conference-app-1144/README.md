@@ -97,4 +97,4 @@ https://www.youtube.com/watch?v=uy0tP6_kWJ4
 To test API locally (so you dont have to debug through google server):
 in terminal: `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=test --unsafely-treat-insecure-origin-as-secure=http://localhost:8080`
 go to `http://localhost:8000/` - click on “default” to see web UI
-go to l`ocalhost:8080/_ah/api/explorer` - to see api explorer
+go to `localhost:8080/_ah/api/explorer` - to see api explorer
