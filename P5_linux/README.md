@@ -50,6 +50,8 @@ python-pip
 python-psycopg2  
 python-sqlalchemy  
 requests  
+munin
+fail2ban
 
 ###Configuration
 
@@ -232,9 +234,16 @@ APT::Periodic::AutocleanInterval "7";
 To check updates: `/var/log/apt/history.log`   
 
 __Install monitoring applications__  
-that provides automated feedback on application availability status and system security alerts.
+
+Once everything is working correctly, to install a system monitoring service, install Munin. The installation is relatively easy by following the package documentation and tutorial at digital ocean. 
 
 [Munin](http://munin-monitoring.org/wiki/Documentation)
+In file: `/etc/munin/munin.conf` Ensure that `[localhost.localdomain]` updated to display the hostname, domain name, or other identifier to use for monitoring server. 
+
+
+To get safer system protected against repetitive ssh log install fail2ban package. fail2ban can automatically alter the iptables rules after a predefined number of unsuccessful login attempts.
+
+To install the package I've followed the package documentation and a fantastic tutorial at digital ocean.
 [Fail2Ban](http://www.fail2ban.org/wiki/index.php/MANUAL_0_8)
 
 ## Creator
@@ -260,6 +269,10 @@ http://flask.pocoo.org/docs/0.10/deploying/mod_wsgi/#configuring-apache
 
 [Unattended Upgrades](https://www.howtoforge.com/how-to-configure-automatic-updates-on-debian-wheezy)
 
-[Fail2Ban Tutorial](https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04)  
+[Fail2Ban Tutorial](https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04)
+
+[Fail2Ban Documentation](http://www.fail2ban.org/wiki/index.php/MANUAL_0_8)
 
 [Munin Tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-munin-on-an-ubuntu-vps)
+
+[Munin Documentation](http://munin-monitoring.org/wiki/Documentation)
